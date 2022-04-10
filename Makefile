@@ -19,15 +19,16 @@ LDGEN ?= $(CC)
 
 CFLAGS += $(BOARD_CONFIG) -DVERSION=\"$(VERSION)\"
 CFLAGS += -I../plo
+CFLAGS += -O0 -g3 -ggdb #DEBUG CFLAGS
 
 include hal/$(TARGET_SUFF)/Makefile
-include lib/Makefile
-include devices/Makefile
-include phfs/Makefile
-include cmds/Makefile
+# include lib/Makefile
+# include devices/Makefile
+# include phfs/Makefile
+# include cmds/Makefile
 
 
-OBJS += $(addprefix $(PREFIX_O), _startc.o plo.o syspage.o)
+OBJS += $(addprefix $(PREFIX_O), _startc.o plo.o) #syspage.o
 
 
 .PHONY: all base ram clean
