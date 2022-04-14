@@ -6,9 +6,9 @@
 # %LICENSE%
 #
 
-ifneq (, $(findstring zynq7000, $(TARGET_SUBFAMILY)))
-    include hal/armv7a/zynq7000/Makefile
-    CFLAGS += -I../plo/hal/armv7a/zynq7000
+ifneq (, $(findstring zynq7000emu, $(TARGET_SUBFAMILY)))
+    include hal/armv7a/zynq7000emu/Makefile
+    CFLAGS += -I../plo/hal/armv7a/zynq7000emu
 else ifneq (, $(findstring imx6ull, $(TARGET_SUBFAMILY)))
    include hal/armv7a/imx6ull/Makefile
     CFLAGS += -I../plo/hal/armv7a/imx6ull

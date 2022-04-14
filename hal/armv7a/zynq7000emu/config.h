@@ -28,12 +28,12 @@
 
 #include "../cpu.h"
 
-#define PATH_KERNEL "phoenix-armv7a9-zynq7000.elf"
+#define PATH_KERNEL "phoenix-armv7a9-zynq7000emu.elf"
 
 #endif
 
 
 /* Import platform specific definitions */
-#include "ld/armv7a9-zynq7000.ldt"
+#include "ld/armv7a9-zynq7000emu.ldt"
 
 #endif
