@@ -27,19 +27,37 @@ extern int usleep(useconds_t usecs);
 
 int main(void)
 {
+	int j;
 	volatile unsigned int *vmc_powerset_secure_base = (unsigned int *)0x5003A604; //+ 0x608;
-	volatile unsigned int *gpio_secure_base = (unsigned int *)0x50842500;
-	volatile unsigned int *gpio_nonsecure_base = (unsigned int *)0x40842500;
-	volatile unsigned int *outset_secure = gpio_secure_base + 0x008;
-	volatile unsigned int *outclr_secure = gpio_secure_base + 0x00C;
-	volatile unsigned int *dirset_secure = gpio_secure_base + 0x018;
-	volatile unsigned int *outset_nonsecure = gpio_nonsecure_base + 0x008;
-	volatile unsigned int *outclr_nonsecure = gpio_nonsecure_base + 0x00C;
-	volatile unsigned int *dirset_nonsecure = gpio_nonsecure_base + 0x018;
+	volatile unsigned int *gpio_secure_base_dirset = (unsigned int *)0x50842518;
+	volatile unsigned int *gpio_secure_base_outset = (unsigned int *)0x50842508;
+	volatile unsigned int *gpio_secure_base_outclr = (unsigned int *)0x5084250C;
+	// volatile unsigned int *gpio_nonsecure_base = (unsigned int *)0x40842500;
+	// volatile unsigned int *outset_secure = gpio_secure_base + 0x008;
+	// volatile unsigned int *outclr_secure = gpio_secure_base + 0x00C;
+	// volatile unsigned int *dirset_secure = gpio_secure_base + 0x018;
+	// volatile unsigned int *outset_nonsecure = gpio_nonsecure_base + 0x008;
+	// volatile unsigned int *outclr_nonsecure = gpio_nonsecure_base + 0x00C;
+	// volatile unsigned int *dirset_nonsecure = gpio_nonsecure_base + 0x018;
 
 	*vmc_powerset_secure_base = 0xFFFFF;//0xF << 16;
-	// *dirset_secure = 1u << 2;
-	// *outset_secure = 1u << 2;
+	*gpio_secure_base_dirset = 1u << 2;
+
+	*gpio_secure_base_outset = 1u << 2;
+	// *gpio_secure_base_outclr = 1u << 2;
+	// for(int i=0; i <=2; i++) {;}
+
+	// for(int i = 0; i <= 3000000000; i++) {
+	// 	j++;
+	// }
+
+	*gpio_secure_base_outclr = 1u << 2;
+	// for(int i = 0; i <= 100000000000000; i++) {
+	// 	j++;
+	// }
+	*gpio_secure_base_outset = 1u << 2;
+	// *gpio_secure_base_outset = 1u << 2;
+
 	// *dirset_nonsecure = 1u << 2;
 	// *outset_nonsecure = 1u << 2;
 
