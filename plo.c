@@ -70,7 +70,7 @@ int main(void)
 	// 	usleep(500000);
 	// }
 
-	// hal_init();
+	hal_init();
 	// hal_consolePrint("hello from nrf9160 plo!\n");
 
 

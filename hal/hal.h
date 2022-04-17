@@ -25,8 +25,8 @@
 enum { hal_cpuICache = 0, hal_cpuDCache };
 
 
-// /* Function initializes clocks, peripherals and basic controllers */
-// extern void hal_init(void);
+/* Function initializes clocks, peripherals and basic controllers */
+extern void hal_init(void);
 
 
 // /* Function resets basic controllers */

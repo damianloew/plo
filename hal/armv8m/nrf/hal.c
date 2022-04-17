@@ -13,7 +13,7 @@
  * %LICENSE%
  */
 
-// #include <hal/hal.h>
+#include <hal/hal.h>
 
 // struct {
 // 	hal_syspage_t *hs;
@@ -32,25 +32,25 @@
 // extern void timer_init(void);
 // extern void timer_done(void);
 
-// /* Console */
-// extern void console_init(void);
+/* Console */
+extern void console_init(void);
 
 // /* Interrupts */
 // extern void interrupts_init(void);
 
 
-// void hal_init(void)
-// {
-// 	hal_cpuInit();
-// 	_stm32_init();
-// 	interrupts_init();
+void hal_init(void)
+{
+	hal_cpuInit();
+	// _nrf91_init();
+	// interrupts_init();
 
-// 	mpu_init();
-// 	timer_init();
-// 	console_init();
+	// mpu_init();
+	// timer_init();
+	console_init();
 
-// 	hal_common.entry = (addr_t)-1;
-// }
+	// hal_common.entry = (addr_t)-1;
+}
 
 
 // void hal_done(void)
