@@ -55,7 +55,7 @@ int main(void)
 	// for(int i = 0; i <= 100000000000000; i++) {
 	// 	j++;
 	// }
-	*gpio_secure_base_outset = 1u << 2;
+	// *gpio_secure_base_outset = 1u << 2;
 	// *gpio_secure_base_outset = 1u << 2;
 
 	// *dirset_nonsecure = 1u << 2;
@@ -71,6 +71,7 @@ int main(void)
 	// }
 
 	hal_init();
+	*gpio_secure_base_outset = 1u << 2;
 	// hal_consolePrint("hello from nrf9160 plo!\n");
 
 

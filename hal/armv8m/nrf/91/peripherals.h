@@ -14,10 +14,10 @@
  */
 
 
-// #ifndef _PERIPHERALS_H_
-// #define _PERIPHERALS_H_
+#ifndef _PERIPHERALS_H_
+#define _PERIPHERALS_H_
 
-// /* Periperals configuration */
+/* Periperals configuration */
 
 // /* Interrupts */
 // #define SIZE_INTERRUPTS (217 + 16)
@@ -51,11 +51,10 @@
 
 // #define UART_BAUDRATE 115200
 
-// #define UART1_BASE ((void *)0x40013800)
-// #define UART2_BASE ((void *)0x40004400)
-// #define UART3_BASE ((void *)0x40004800)
-// #define UART4_BASE ((void *)0x40004c00)
-// #define UART5_BASE ((void *)0x40005000)
+#define UART0_BASE ((void *)0x50008000)
+#define UART1_BASE ((void *)0x50009000)
+#define UART2_BASE ((void *)0x5000A000)
+#define UART3_BASE ((void *)0x5000B000)
 
 // #define UART1_CLK pctl_usart1
 // #define UART2_CLK pctl_usart2
@@ -73,4 +72,4 @@
 // #define FLASH_PROGRAM_2_ADDR    0x08080000
 // #define FLASH_PROGRAM_BANK_SIZE (512 * 1024)
 
-// #endif
+#endif

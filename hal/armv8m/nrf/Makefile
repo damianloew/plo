@@ -6,6 +6,6 @@
 # %LICENSE%
 #
 
-include hal/armv8m/nrf/9160/Makefile
-CFLAGS += -I../plo/hal/armv8m/nrf/9160
+include hal/armv8m/nrf/91/Makefile
+CFLAGS += -I../plo/hal/armv8m/nrf/91
 OBJS += $(addprefix $(PREFIX_O)hal/$(TARGET_SUFF)/nrf/, hal.o)

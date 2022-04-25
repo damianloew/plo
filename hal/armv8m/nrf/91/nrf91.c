@@ -5,31 +5,31 @@
  *
  * STM32L4x6 basic peripherals control functions
  *
- * Copyright 2017, 2019, 2020, 2021 Phoenix Systems
- * Author: Aleksander Kaminski, Jan Sikorski, Hubert Buczynski
+ * Copyright 2022 Phoenix Systems
+ * Author: Damian Loewnau
  *
  * This file is part of Phoenix-RTOS.
  *
  * %LICENSE%
  */
 
-// #include <hal/hal.h>
-// #include "stm32l4.h"
+#include <hal/hal.h>
+#include "nrf91.h"
 
-// static struct {
-// 	volatile u32 *rcc;
-// 	volatile u32 *gpio[9];
-// 	volatile u32 *scb;
-// 	volatile u32 *pwr;
-// 	volatile u32 *rtc;
-// 	volatile u32 *syscfg;
-// 	volatile u32 *iwdg;
-// 	volatile u32 *flash;
+static struct {
+	// volatile u32 *rcc;
+	volatile u32 *gpio;
+	// volatile u32 *scb;
+	// volatile u32 *pwr;
+	// volatile u32 *rtc;
+	// volatile u32 *syscfg;
+	// volatile u32 *iwdg;
+	// volatile u32 *flash;
 
-// 	u32 cpuclk;
+	// u32 cpuclk;
 
-// 	u32 resetFlags;
-// } stm32_common;
+	// u32 resetFlags;
+} nrf91_common;
 
 
 // enum { ahb1_begin = pctl_dma1, ahb1_end = pctl_dma2d, ahb2_begin = pctl_gpioa, ahb2_end = pctl_rng,
@@ -45,9 +45,7 @@
 // 	rcc_ahb2smenr, rcc_ahb3smenr, rcc_apb1smenr1 = rcc_ahb3smenr + 2, rcc_apb1smenr2, rcc_apb2smenr,
 // 	rcc_ccipr = rcc_apb2smenr + 2, rcc_bdcr = rcc_ccipr + 2, rcc_csr, rcc_crrcr, rcc_ccipr2 };
 
-
-// enum { gpio_moder = 0, gpio_otyper, gpio_ospeedr, gpio_pupdr, gpio_idr,
-// 	gpio_odr, gpio_bsrr, gpio_lckr, gpio_afrl, gpio_afrh, gpio_brr, gpio_ascr };
+enum { gpio_out = 1, gpio_outset, gpio_outclr, gpio_in, gpio_dir, gpio_dirsetout, gpio_dirsetin, gpio_cnf = 128 };
 
 
 // enum { pwr_cr1 = 0, pwr_cr2, pwr_cr3, pwr_cr4, pwr_sr1, pwr_sr2, pwr_scr, pwr_pucra, pwr_pdcra, pwr_pucrb,
@@ -310,64 +308,70 @@
 // }
 
 
-// /* GPIO */
+/* GPIO */
 
 
-// int _stm32_gpioConfig(unsigned int d, u8 pin, u8 mode, u8 af, u8 otype, u8 ospeed, u8 pupd)
-// {
-// 	volatile u32 *base;
-// 	u32 t;
+int _nrf91_gpioConfig(u8 pin, u8 dir)
+{
+	// volatile u32 *base;
+	// u32 t;
 
-// 	if (d > pctl_gpioi || pin > 15)
-// 		return -1;
+	if (pin > 31)
+		return -1;
 
-// 	base = stm32_common.gpio[d - pctl_gpioa];
+	if (dir == output) {
+		*(nrf91_common.gpio + gpio_dirsetout) = (pin << 1);
+	}
+	else if (dir == input) {
+		*(nrf91_common.gpio + gpio_dirsetin) = (pin << 1);
+	}
+	
+	// base = stm32_common.gpio[d - pctl_gpioa];
 
-// 	t = *(base + gpio_moder) & ~(0x3 << (pin << 1));
-// 	*(base + gpio_moder) = t | (mode & 0x3) << (pin << 1);
+	// t = *(base + gpio_moder) & ~(0x3 << (pin << 1));
+	// *(base + gpio_moder) = t | (mode & 0x3) << (pin << 1);
 
-// 	t = *(base + gpio_otyper) & ~(1 << pin);
-// 	*(base + gpio_otyper) = t | (otype & 1) << pin;
+	// t = *(base + gpio_otyper) & ~(1 << pin);
+	// *(base + gpio_otyper) = t | (otype & 1) << pin;
 
-// 	t = *(base + gpio_ospeedr) & ~(0x3 << (pin << 1));
-// 	*(base + gpio_ospeedr) = t | (ospeed & 0x3) << (pin << 1);
+	// t = *(base + gpio_ospeedr) & ~(0x3 << (pin << 1));
+	// *(base + gpio_ospeedr) = t | (ospeed & 0x3) << (pin << 1);
 
-// 	t = *(base + gpio_pupdr) & ~(0x03 << (pin << 1));
-// 	*(base + gpio_pupdr) = t | (pupd & 0x3) << (pin << 1);
+	// t = *(base + gpio_pupdr) & ~(0x03 << (pin << 1));
+	// *(base + gpio_pupdr) = t | (pupd & 0x3) << (pin << 1);
 
-// 	if (pin < 8) {
-// 		t = *(base + gpio_afrl) & ~(0xf << (pin << 2));
-// 		*(base + gpio_afrl) = t | (af & 0xf) << (pin << 2);
-// 	}
-// 	else {
-// 		t = *(base + gpio_afrh) & ~(0xf << ((pin - 8) << 2));
-// 		*(base + gpio_afrh) = t | (af & 0xf) << ((pin - 8) << 2);
-// 	}
+	// if (pin < 8) {
+	// 	t = *(base + gpio_afrl) & ~(0xf << (pin << 2));
+	// 	*(base + gpio_afrl) = t | (af & 0xf) << (pin << 2);
+	// }
+	// else {
+	// 	t = *(base + gpio_afrh) & ~(0xf << ((pin - 8) << 2));
+	// 	*(base + gpio_afrh) = t | (af & 0xf) << ((pin - 8) << 2);
+	// }
 
-// 	if (mode == 0x3)
-// 		*(base + gpio_ascr) |= 1 << pin;
-// 	else
-// 		*(base + gpio_ascr) &= ~(1 << pin);
+	// if (mode == 0x3)
+	// 	*(base + gpio_ascr) |= 1 << pin;
+	// else
+	// 	*(base + gpio_ascr) &= ~(1 << pin);
 
-// 	return 0;
-// }
+	return 0;
+}
 
 
-// int _stm32_gpioSet(unsigned int d, u8 pin, u8 val)
-// {
-// 	volatile u32 *base;
-// 	u32 t;
+int _nrf91_gpioSet(u8 pin, u8 val)
+{
+	if (pin > 31)
+		return -1;
 
-// 	if (d > pctl_gpioi || pin > 15)
-// 		return -1;
+	if (val == high) {
+		*(nrf91_common.gpio + gpio_outset) = (pin << 1);
+	}
+	else if (val == low) {
+		*(nrf91_common.gpio + gpio_outclr) = (pin << 1);
+	}
 
-// 	base = stm32_common.gpio[d - pctl_gpioa];
-
-// 	t = *(base + gpio_odr) & ~(!(u32)val << pin);
-// 	*(base + gpio_odr) = t | !!(u32)val << pin;
-
-// 	return 0;
-// }
+	return 0;
+}
 
 
 // int _stm32_gpioSetPort(unsigned int d, u16 val)
@@ -423,31 +427,31 @@
 // }
 
 
-// void _stm32_init(void)
-// {
-// 	u32 i;
-// 	static const int gpio2pctl[] = { pctl_gpioa, pctl_gpiob, pctl_gpioc,
-// 		pctl_gpiod, pctl_gpioe, pctl_gpiof, pctl_gpiog, pctl_gpioh, pctl_gpioi };
+void _nrf91_init(void)
+{
+	// u32 i;
+	// static const int gpio2pctl[] = { pctl_gpioa, pctl_gpiob, pctl_gpioc,
+	// 	pctl_gpiod, pctl_gpioe, pctl_gpiof, pctl_gpiog, pctl_gpioh, pctl_gpioi };
 
-// 	/* Base addresses init */
-// 	stm32_common.rcc = (void *)0x40021000;
-// 	stm32_common.pwr = (void *)0x40007000;
-// 	stm32_common.scb = (void *)0xe000e000;
-// 	stm32_common.rtc = (void *)0x40002800;
-// 	stm32_common.syscfg = (void *)0x40010000;
-// 	stm32_common.iwdg = (void *)0x40003000;
-// 	stm32_common.gpio[0] = (void *)0x48000000; /* GPIOA */
-// 	stm32_common.gpio[1] = (void *)0x48000400; /* GPIOB */
-// 	stm32_common.gpio[2] = (void *)0x48000800; /* GPIOC */
-// 	stm32_common.gpio[3] = (void *)0x48000c00; /* GPIOD */
-// 	stm32_common.gpio[4] = (void *)0x48001000; /* GPIOE */
-// 	stm32_common.gpio[5] = (void *)0x48001400; /* GPIOF */
-// 	stm32_common.gpio[6] = (void *)0x48001800; /* GPIOG */
-// 	stm32_common.gpio[7] = (void *)0x48001c00; /* GPIOH */
-// 	stm32_common.gpio[8] = (void *)0x48002000; /* GPIOI */
-// 	stm32_common.flash = (void *)0x40022000;
+	/* Base addresses init */
+	// stm32_common.rcc = (void *)0x40021000;
+	// stm32_common.pwr = (void *)0x40007000;
+	// stm32_common.scb = (void *)0xe000e000;
+	// stm32_common.rtc = (void *)0x40002800;
+	// stm32_common.syscfg = (void *)0x40010000;
+	// stm32_common.iwdg = (void *)0x40003000;
+	nrf91_common.gpio = (void *)0x50842500; /* GPIO */
+	// stm32_common.gpio[1] = (void *)0x48000400; /* GPIOB */
+	// stm32_common.gpio[2] = (void *)0x48000800; /* GPIOC */
+	// stm32_common.gpio[3] = (void *)0x48000c00; /* GPIOD */
+	// stm32_common.gpio[4] = (void *)0x48001000; /* GPIOE */
+	// stm32_common.gpio[5] = (void *)0x48001400; /* GPIOF */
+	// stm32_common.gpio[6] = (void *)0x48001800; /* GPIOG */
+	// stm32_common.gpio[7] = (void *)0x48001c00; /* GPIOH */
+	// stm32_common.gpio[8] = (void *)0x48002000; /* GPIOI */
+	// stm32_common.flash = (void *)0x40022000;
 
-// 	/* Enable System configuration controller */
+	// /* Enable System configuration controller */
 // 	_stm32_rccSetDevClock(pctl_syscfg, 1);
 
 // 	/* Enable power module */
@@ -484,4 +488,4 @@
 // #ifdef NDEBUG
 // 	*(u32 *)0xE0042004 = 0;
 // #endif
-// }
+}

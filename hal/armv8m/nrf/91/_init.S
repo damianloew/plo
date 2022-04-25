@@ -15,7 +15,7 @@
 
 #define __ASSEMBLY__
 
-// #include "config.h"
+#include "config.h"
 
 // set unified instruction set syntax - unified for arm and thumb
 .syntax unified

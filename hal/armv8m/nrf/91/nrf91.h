@@ -5,19 +5,22 @@
  *
  * STM32L4x6 basic peripherals control functions
  *
- * Copyright 2017, 2020, 2021 Phoenix Systems
- * Author: Aleksander Kaminski, Pawel Pisarczyk, Hubert Buczynski
+ * Copyright 2022 Phoenix Systems
+ * Author: Damian Loewnau
  *
  * This file is part of Phoenix-RTOS.
  *
  * %LICENSE%
  */
 
-// #ifndef _HAL_STM32L4_H_
-// #define _HAL_STM32L4_H_
+#ifndef _HAL_NRF91_H_
+#define _HAL_NRF91_H_
 
-// #include "../types.h"
+#include "../types.h"
 
+
+enum { input = 0, output };
+enum { low = 0, high };
 // /* STM32L4 peripherals */
 // enum {
 // 	/* AHB1 */
@@ -81,9 +84,10 @@
 // extern void _stm32_rccClearResetFlags(void);
 
 
-// extern int _stm32_gpioConfig(unsigned int d, u8 pin, u8 mode, u8 af, u8 otype, u8 ospeed, u8 pupd);
+extern int _nrf91_gpioConfig(u8 pin, u8 dir);
 
 
+extern int _nrf91_gpioSet(u8 pin, u8 val);
 // extern int _stm32_gpioSet(unsigned int d, u8 pin, u8 val);
 
 
@@ -129,4 +133,4 @@
 
 // extern void _stm32_init(void);
 
-// #endif
+#endif
