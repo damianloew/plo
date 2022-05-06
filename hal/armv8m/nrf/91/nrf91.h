@@ -21,6 +21,8 @@
 
 enum { input = 0, output };
 enum { low = 0, high };
+enum { nopull = 0, pulldown, pullup = 3};
+
 // /* STM32L4 peripherals */
 // enum {
 // 	/* AHB1 */
@@ -84,7 +86,7 @@ enum { low = 0, high };
 // extern void _stm32_rccClearResetFlags(void);
 
 
-extern int _nrf91_gpioConfig(u8 pin, u8 dir);
+extern int _nrf91_gpioConfig(u8 pin, u8 dir, u8 pull);
 
 
 extern int _nrf91_gpioSet(u8 pin, u8 val);

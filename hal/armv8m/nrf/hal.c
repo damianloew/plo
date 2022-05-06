@@ -42,6 +42,7 @@ extern void console_init(void);
 void hal_init(void)
 {
 	hal_cpuInit();
+
 	_nrf91_init();
 	// interrupts_init();
 

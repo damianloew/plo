@@ -19,6 +19,8 @@
 static struct {
 	// volatile u32 *rcc;
 	volatile u32 *gpio;
+	volatile u32 *power;
+	volatile u32 *clock;
 	// volatile u32 *scb;
 	// volatile u32 *pwr;
 	// volatile u32 *rtc;
@@ -47,6 +49,9 @@ static struct {
 
 enum { gpio_out = 1, gpio_outset, gpio_outclr, gpio_in, gpio_dir, gpio_dirsetout, gpio_dirsetin, gpio_cnf = 128 };
 
+enum { power_tasks_constlat = 30, power_tasks_lowpwr, power_inten = 192, power_intenset, power_intenclr, power_status = 272};
+
+enum { clock_tasks_hfclkstart, clock_inten = 192, clock_intenset, clock_intenclr, clock_hfclkrun = 258, clock_hfclkstat };
 
 // enum { pwr_cr1 = 0, pwr_cr2, pwr_cr3, pwr_cr4, pwr_sr1, pwr_sr2, pwr_scr, pwr_pucra, pwr_pdcra, pwr_pucrb,
 // 	pwr_pdcrb, pwr_pucrc, pwr_pdcrc, pwr_pucrd, pwr_pdcrd, pwr_pucre, pwr_pdcre, pwr_pucrf, pwr_pdcrf,
@@ -311,21 +316,29 @@ enum { gpio_out = 1, gpio_outset, gpio_outclr, gpio_in, gpio_dir, gpio_dirsetout
 /* GPIO */
 
 
-int _nrf91_gpioConfig(u8 pin, u8 dir)
+int _nrf91_gpioConfig(u8 pin, u8 dir, u8 pull)
 {
-	// volatile u32 *base;
+	volatile unsigned int *dirset = 0x50842518;
 	// u32 t;
 
 	if (pin > 31)
 		return -1;
 
 	if (dir == output) {
-		*(nrf91_common.gpio + gpio_dirsetout) = (pin << 1);
+		*(nrf91_common.gpio + gpio_dirsetout) = (1u << pin);
+		while ( (*(nrf91_common.gpio + gpio_dir) & (1u << pin)) != (1u << pin) ) ;
 	}
 	else if (dir == input) {
-		*(nrf91_common.gpio + gpio_dirsetin) = (pin << 1);
+		*(nrf91_common.gpio + gpio_dirsetin) = (1u << pin);
+		while ( (*(nrf91_common.gpio + gpio_dir) | ~(1u << pin)) != ~(1u << pin) ) ;
+		/* connect input buffer */
+		*(nrf91_common.gpio + gpio_cnf + pin) &= ~0x2;
 	}
 	
+	if (pull) { //led isn't working after that
+		*(nrf91_common.gpio + gpio_cnf + pin) = (pull << 2);
+		// while ( (*(nrf91_common.gpio + gpio_cnf) | (0u << pin)) != ~(1u << pin) ) ;
+	}
 	// base = stm32_common.gpio[d - pctl_gpioa];
 
 	// t = *(base + gpio_moder) & ~(0x3 << (pin << 1));
@@ -364,10 +377,12 @@ int _nrf91_gpioSet(u8 pin, u8 val)
 		return -1;
 
 	if (val == high) {
-		*(nrf91_common.gpio + gpio_outset) = (pin << 1);
+		*(nrf91_common.gpio + gpio_outset) = (1u << pin);
+		while ( (*(nrf91_common.gpio + gpio_out) & (1u << pin)) != (1u << pin) ) ;
 	}
 	else if (val == low) {
-		*(nrf91_common.gpio + gpio_outclr) = (pin << 1);
+		*(nrf91_common.gpio + gpio_outclr) = (1u << pin);
+		while ( (*(nrf91_common.gpio + gpio_out) | ~(1u << pin)) != ~(1u << pin) ) ;
 	}
 
 	return 0;
@@ -429,7 +444,8 @@ int _nrf91_gpioSet(u8 pin, u8 val)
 
 void _nrf91_init(void)
 {
-	// u32 i;
+	int flag = 0;
+	volatile u32 reg=5, reg1=6;
 	// static const int gpio2pctl[] = { pctl_gpioa, pctl_gpiob, pctl_gpioc,
 	// 	pctl_gpiod, pctl_gpioe, pctl_gpiof, pctl_gpiog, pctl_gpioh, pctl_gpioi };
 
@@ -440,7 +456,9 @@ void _nrf91_init(void)
 	// stm32_common.rtc = (void *)0x40002800;
 	// stm32_common.syscfg = (void *)0x40010000;
 	// stm32_common.iwdg = (void *)0x40003000;
-	nrf91_common.gpio = (void *)0x50842500; /* GPIO */
+	nrf91_common.power = (void *)0x50005000;
+	nrf91_common.clock = (void *)0x50005000;
+	nrf91_common.gpio = (void *)0x50842500;
 	// stm32_common.gpio[1] = (void *)0x48000400; /* GPIOB */
 	// stm32_common.gpio[2] = (void *)0x48000800; /* GPIOC */
 	// stm32_common.gpio[3] = (void *)0x48000c00; /* GPIOD */
@@ -450,6 +468,41 @@ void _nrf91_init(void)
 	// stm32_common.gpio[7] = (void *)0x48001c00; /* GPIOH */
 	// stm32_common.gpio[8] = (void *)0x48002000; /* GPIOI */
 	// stm32_common.flash = (void *)0x40022000;
+
+
+	/* Enable low power mode */
+	//*(nrf91_common.power + power_tasks_lowpwr) = 1u;
+	*(nrf91_common.power + power_tasks_constlat) = 1u;
+
+	/* Disable all power interrupts */
+	*(nrf91_common.power + power_intenclr) = 0x64;
+
+	// if (*(nrf91_common.power + power_inten) != 0u ) {
+	// 	flag = 1;
+	// }
+	// else {
+	// 	flag = 2;
+	// }
+
+	while ( *(nrf91_common.power + power_inten) != 0u ) ; //TODO: check only required bits
+
+	// /* Ensure that the modem is enabled */ led isn't working after that !!!!
+	// while ( *(nrf91_common.power + power_status ) != 1u ) ;
+
+	/* Disable all clock interrupts */
+	*(nrf91_common.power + power_intenclr) = 0x3;
+	while ( *(nrf91_common.power + power_inten) != 0u ) ; //TODO: check only required bits
+
+	*(nrf91_common.clock + clock_tasks_hfclkstart) = 1u;
+	/* Wait untill HXFO start */
+	while ( (reg1 = *(nrf91_common.clock + clock_hfclkrun)) != 1u ) ;
+
+	/* Returning 0 even if clock_hfclkrun is set properly - maybe it's disabled when not needed (?) */
+	// while ( (reg = *(nrf91_common.clock + clock_hfclkstat)) != 0x0101 ) ;
+
+	*(nrf91_common.clock + clock_intenclr) = 0x3;
+
+	while ( (reg = *(nrf91_common.clock + clock_inten)) != 0u ) ; //TODO: check only required bits
 
 	// /* Enable System configuration controller */
 // 	_stm32_rccSetDevClock(pctl_syscfg, 1);
