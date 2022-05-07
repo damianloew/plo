@@ -444,8 +444,8 @@ int _nrf91_gpioSet(u8 pin, u8 val)
 
 void _nrf91_init(void)
 {
-	int flag = 0;
-	volatile u32 reg=5, reg1=6;
+	// int flag = 0;
+	// volatile u32 reg=5, reg1=6;
 	// static const int gpio2pctl[] = { pctl_gpioa, pctl_gpiob, pctl_gpioc,
 	// 	pctl_gpiod, pctl_gpioe, pctl_gpiof, pctl_gpiog, pctl_gpioh, pctl_gpioi };
 
@@ -471,38 +471,29 @@ void _nrf91_init(void)
 
 
 	/* Enable low power mode */
-	//*(nrf91_common.power + power_tasks_lowpwr) = 1u;
-	*(nrf91_common.power + power_tasks_constlat) = 1u;
+	*(nrf91_common.power + power_tasks_lowpwr) = 1u;
+	// *(nrf91_common.power + power_tasks_constlat) = 1u;
 
 	/* Disable all power interrupts */
 	*(nrf91_common.power + power_intenclr) = 0x64;
 
-	// if (*(nrf91_common.power + power_inten) != 0u ) {
-	// 	flag = 1;
-	// }
-	// else {
-	// 	flag = 2;
-	// }
-
-	while ( *(nrf91_common.power + power_inten) != 0u ) ; //TODO: check only required bits
+	// while ( *(nrf91_common.power + power_inten) != 0u ) ; //TODO: check only required bits
 
 	// /* Ensure that the modem is enabled */ led isn't working after that !!!!
 	// while ( *(nrf91_common.power + power_status ) != 1u ) ;
 
 	/* Disable all clock interrupts */
 	*(nrf91_common.power + power_intenclr) = 0x3;
-	while ( *(nrf91_common.power + power_inten) != 0u ) ; //TODO: check only required bits
+	// while ( *(nrf91_common.power + power_inten) != 0u ) ; //TODO: check only required bits
 
 	*(nrf91_common.clock + clock_tasks_hfclkstart) = 1u;
-	/* Wait untill HXFO start */
-	while ( (reg1 = *(nrf91_common.clock + clock_hfclkrun)) != 1u ) ;
+	/* Wait untill HXFO start and clear event flag */
+	while ( *(nrf91_common.clock + clock_hfclkrun) != 1u )
+		;
+	*(nrf91_common.clock + clock_hfclkrun) = 0u;
 
 	/* Returning 0 even if clock_hfclkrun is set properly - maybe it's disabled when not needed (?) */
 	// while ( (reg = *(nrf91_common.clock + clock_hfclkstat)) != 0x0101 ) ;
-
-	*(nrf91_common.clock + clock_intenclr) = 0x3;
-
-	while ( (reg = *(nrf91_common.clock + clock_inten)) != 0u ) ; //TODO: check only required bits
 
 	// /* Enable System configuration controller */
 // 	_stm32_rccSetDevClock(pctl_syscfg, 1);
