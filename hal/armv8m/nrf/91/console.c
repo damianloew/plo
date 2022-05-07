@@ -63,7 +63,8 @@ void console_init(void)
 	char *ram1 = (char *)0x20008000;
 
 	char *hello_str = "hello";
-	const u8 uart = 1, txpin = 1, rxpin = 0, rtspin = 14, ctspin = 15, led1pin = 2, led2pin = 3; 
+	/* verified it's uart0 */
+	const u8 uart = 0, txpin = 29, rxpin = 28, rtspin = 27, ctspin = 26, led1pin = 2, led2pin = 3; 
 	unsigned int reg = 6, errsrc = 0;
 	//uart0 - uart1 in schematics,
 	//uart1 - uart 2 in schematics
@@ -83,10 +84,11 @@ void console_init(void)
 	_nrf91_gpioConfig(txpin, output, nopull);
 	_nrf91_gpioConfig(rxpin, input, nopull); // TODO: why underscore ?
 	_nrf91_gpioConfig(rtspin, output, nopull);
-	_nrf91_gpioConfig(ctspin, input, nopull);
+	_nrf91_gpioConfig(ctspin, input, pulldown);
+	// _nrf91_gpioConfig(6, input, pullup);
 
-	_nrf91_gpioSet(txpin, low);
-	_nrf91_gpioSet(rtspin, low);
+	_nrf91_gpioSet(txpin, high);
+	_nrf91_gpioSet(rtspin, high);
 
 	/* Select pins */
 	*(halconsole_common.base + uarte_psel_txd) = txpin;
@@ -97,8 +99,8 @@ void console_init(void)
 	/* Set baud rate to 115200 */
 	*(halconsole_common.base + uarte_baudrate) = 0x01D60000;
 
-	/* Set max number of bytes in specific buffers to 4095 */
-	*(halconsole_common.base + uarte_txd_maxcnt) = 0xFFF;
+	/* Set max number of bytes in specific buffers to 4095 and 6*/
+	*(halconsole_common.base + uarte_txd_maxcnt) = 0x6;
 	*(halconsole_common.base + uarte_rxd_maxcnt) = 0xFFF;
 
 	/* ram 0 and ram 1 start addresses */
@@ -108,7 +110,7 @@ void console_init(void)
 	/* disable all interrupts */
 	*(halconsole_common.base + uarte_intenclr) = 0xFFFFFFFF;
 
-	ram0[0] = 'H';
+	ram0[0] = 'J';
 	ram0[1] = 'e';
 	ram0[2] = 'l';
 	ram0[3] = 'l';
@@ -119,8 +121,8 @@ void console_init(void)
 	/* to remove */
 	while ( (*(halconsole_common.base + uarte_enable) & (0x8)) != (0x8) ) ;
 	reg = *(halconsole_common.base + uarte_events_error);
-	// /* Wait for cts activation */
-	// while ( *(halconsole_common.base + uarte_events_cts) != 1u ) ;
+	/* Wait for cts activation */
+	while ( *(halconsole_common.base + uarte_events_cts) != 1u ) ;
 
 	*(halconsole_common.base + uarte_starttx) = 1u;
 
@@ -128,12 +130,16 @@ void console_init(void)
 
 	while ( *(halconsole_common.base + uarte_events_txstarted) != 1u ) ;
 
-	while ( *(halconsole_common.base + uarte_events_txdrdy) != 1u ) ;
-
+	while ( *(halconsole_common.base + uarte_events_txdrdy) != 1u ) ; *(halconsole_common.base + uarte_events_txdrdy) = 0u; //1 byte are transferred
+	// while ( *(halconsole_common.base + uarte_events_txdrdy) != 1u ) ; *(halconsole_common.base + uarte_events_txdrdy) = 0u;
+	// while ( *(halconsole_common.base + uarte_events_txdrdy) != 1u ) ; *(halconsole_common.base + uarte_events_txdrdy) = 0u;
+	// while ( *(halconsole_common.base + uarte_events_txdrdy) != 1u ) ; *(halconsole_common.base + uarte_events_txdrdy) = 0u;
+	// while ( *(halconsole_common.base + uarte_events_txdrdy) != 1u ) ; *(halconsole_common.base + uarte_events_txdrdy) = 0u;
+	// while ( *(halconsole_common.base + uarte_events_txdrdy) != 1u ) ; *(halconsole_common.base + uarte_events_txdrdy) = 0u;
+	// while ( *(halconsole_common.base + uarte_events_txdrdy) != 1u ) ; *(halconsole_common.base + uarte_events_txdrdy) = 0u;
 	while ( *(halconsole_common.base + uarte_events_endtx) != 1u ) ;
-
 	errsrc = *(halconsole_common.base + uarte_errorsrc);
-
+	reg = *(halconsole_common.base + uarte_txd_amount);
 	reg = 2;
 	// TODO: set config ??
 	// _stm32_rccSetDevClock(uarts[uart].uart, 1);

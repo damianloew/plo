@@ -84,10 +84,10 @@ int main(void)
 
 	// *gpio_secure_base_outset = 1u << 3;
 
-	_nrf91_gpioConfig(2, output, pullup);
-	_nrf91_gpioConfig(3, output, pulldown);
-	_nrf91_gpioConfig(2, output, pullup);
-	_nrf91_gpioConfig(3, output, pulldown);
+	_nrf91_gpioConfig(2, output, nopull);
+	_nrf91_gpioConfig(3, output, nopull);
+	// _nrf91_gpioConfig(2, output, pullup);
+	// _nrf91_gpioConfig(3, output, pulldown);
 
 	_nrf91_gpioSet(2, high);
 	_nrf91_gpioSet(3, high);
