@@ -3,7 +3,7 @@
  *
  * plo - operating system loader
  *
- * Peripherals definitions for armv7m7-stm32l4x6
+ * Peripherals definitions for armv8m33-nrf9160
  *
  * Copyright 2020, 2021 Phoenix Systems
  * Author: Hubert Buczynski, Aleksander Kaminski
@@ -19,8 +19,8 @@
 
 /* Periperals configuration */
 
-// /* Interrupts */
-// #define SIZE_INTERRUPTS (217 + 16)
+/* Interrupts ICTR should be read to verify this, 480 is max for m33 processor */
+#define SIZE_INTERRUPTS 480
 
 // /* UART */
 // #define UART_MAX_CNT 5

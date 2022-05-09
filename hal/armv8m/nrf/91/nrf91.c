@@ -18,12 +18,12 @@
 
 static struct {
 	// volatile u32 *rcc;
-	volatile u32 *gpio;
 	volatile u32 *power;
 	volatile u32 *clock;
 	// volatile u32 *scb;
 	// volatile u32 *pwr;
-	// volatile u32 *rtc;
+	volatile u32 *gpio;
+	volatile u32 *rtc[2];
 	// volatile u32 *syscfg;
 	// volatile u32 *iwdg;
 	// volatile u32 *flash;
@@ -47,11 +47,15 @@ static struct {
 // 	rcc_ahb2smenr, rcc_ahb3smenr, rcc_apb1smenr1 = rcc_ahb3smenr + 2, rcc_apb1smenr2, rcc_apb2smenr,
 // 	rcc_ccipr = rcc_apb2smenr + 2, rcc_bdcr = rcc_ccipr + 2, rcc_csr, rcc_crrcr, rcc_ccipr2 };
 
-enum { gpio_out = 1, gpio_outset, gpio_outclr, gpio_in, gpio_dir, gpio_dirsetout, gpio_dirsetin, gpio_cnf = 128 };
-
 enum { power_tasks_constlat = 30, power_tasks_lowpwr, power_inten = 192, power_intenset, power_intenclr, power_status = 272};
 
 enum { clock_tasks_hfclkstart, clock_inten = 192, clock_intenset, clock_intenclr, clock_hfclkrun = 258, clock_hfclkstat };
+
+enum { gpio_out = 1, gpio_outset, gpio_outclr, gpio_in, gpio_dir, gpio_dirsetout, gpio_dirsetin, gpio_cnf = 128 };
+
+enum { rtc_tasks_start = 0, rtc_tasks_stop, rtc_tasks_clear, rtc_events_tick = 64, 
+	rtc_events_compare0 = 80, rtc_events_compare1, rtc_events_compare2, rtc_events_compare3, rtc_intenset = 193, rtc_intenclr,
+	rtc_evten = 208, rtc_evtenset, rtc_evtenclr, rtc_prescaler = 322, rtc_cc0 = 336, rtc_cc1, rtc_cc2, rtc_cc3};
 
 // enum { pwr_cr1 = 0, pwr_cr2, pwr_cr3, pwr_cr4, pwr_sr1, pwr_sr2, pwr_scr, pwr_pucra, pwr_pdcra, pwr_pucrb,
 // 	pwr_pdcrb, pwr_pucrc, pwr_pdcrc, pwr_pucrd, pwr_pdcrd, pwr_pucre, pwr_pdcre, pwr_pucrf, pwr_pdcrf,
@@ -288,29 +292,54 @@ enum { clock_tasks_hfclkstart, clock_inten = 192, clock_intenset, clock_intenclr
 // }
 
 
-// /* SysTick */
+/* RTC */
 
 
-// int _stm32_systickInit(u32 interval)
-// {
-// 	u64 load = ((u64)interval * stm32_common.cpuclk) / 1000000;
-// 	if (load > 0x00ffffff)
-// 		return -1;
+int _nrf91_rtcInit(u32 interval)
+{
+	// /* 1 tick per 1.007 ms */
+	// *(nrf91_common.rtc[0] + rtc_prescaler) = 32u;
+	// // *(nrf91_common.rtc[0] + rtc_prescaler) = 32999u; //temp - tick every 1s
+	// /* Enable triggering tick events */
+	// *(nrf91_common.rtc[0] + rtc_evtenset) = 1u;
+	// /* Enable interrupts from tick events */
+	// *(nrf91_common.rtc[0] + rtc_intenset) = 1u;
 
-// 	*(stm32_common.scb + syst_rvr) = (u32)load;
-// 	*(stm32_common.scb + syst_cvr) = 0;
+	// /* Start RTC */
+	// *(nrf91_common.rtc[0] + rtc_tasks_start) = 1u;
 
-// 	/* Enable systick */
-// 	*(stm32_common.scb + syst_csr) |= 0x7;
+	/* 1 tick per 1.007 ms */
+	*(nrf91_common.rtc[0] + rtc_prescaler) = 0u;
+	// *(nrf91_common.rtc[0] + rtc_prescaler) = 32999u; //temp - tick every 1s
+	*(nrf91_common.rtc[0] + rtc_cc0) = 33u;
+	/* Enable triggering compare events */
+	*(nrf91_common.rtc[0] + rtc_evtenset) = 0x10000;
+	/* Enable interrupts from compare events */
+	*(nrf91_common.rtc[0] + rtc_intenset) = 0x10000;
 
-// 	return 0;
-// }
+	/* Clear and start RTC */
+	*(nrf91_common.rtc[0] + rtc_tasks_clear) = 1u;
+	*(nrf91_common.rtc[0] + rtc_tasks_start) = 1u;
+	return 0;
+}
 
 
-// void _stm32_systickDone(void)
-// {
-// 	*(stm32_common.scb + syst_csr) = 0;
-// }
+void _nrf91_rtcDone(void)
+{
+	/* Stop RTC */
+	*(nrf91_common.rtc[0] + rtc_tasks_start) = 1u;
+}
+
+
+void _nrf91_rtcClearEvent(void)
+{
+	// /* Clear tick event */
+	// *(nrf91_common.rtc[0] + rtc_events_tick) = 0u;
+	/* Clear compare event */
+	*(nrf91_common.rtc[0] + rtc_events_compare0) = 0u;
+	/* Clear counter */
+	*(nrf91_common.rtc[0] + rtc_tasks_clear) = 1u;
+}
 
 
 /* GPIO */
@@ -459,6 +488,8 @@ void _nrf91_init(void)
 	nrf91_common.power = (void *)0x50005000;
 	nrf91_common.clock = (void *)0x50005000;
 	nrf91_common.gpio = (void *)0x50842500;
+	nrf91_common.rtc[0] = (void *)0x50014000;
+	nrf91_common.rtc[1] = (void *)0x50015000;
 	// stm32_common.gpio[1] = (void *)0x48000400; /* GPIOB */
 	// stm32_common.gpio[2] = (void *)0x48000800; /* GPIOC */
 	// stm32_common.gpio[3] = (void *)0x48000c00; /* GPIOD */
@@ -471,8 +502,8 @@ void _nrf91_init(void)
 
 
 	/* Enable low power mode */
-	*(nrf91_common.power + power_tasks_lowpwr) = 1u;
-	// *(nrf91_common.power + power_tasks_constlat) = 1u;
+	// *(nrf91_common.power + power_tasks_lowpwr) = 1u;
+	*(nrf91_common.power + power_tasks_constlat) = 1u;
 
 	/* Disable all power interrupts */
 	*(nrf91_common.power + power_intenclr) = 0x64;

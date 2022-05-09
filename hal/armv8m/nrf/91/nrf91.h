@@ -121,11 +121,13 @@ extern int _nrf91_gpioSet(u8 pin, u8 val);
 // extern u32 _stm32_rtcGetms(void);
 
 
-// extern int _stm32_systickInit(u32 interval);
+extern int _nrf91_rtcInit(u32 interval);
 
 
-// extern void _stm32_systickDone(void);
+extern void _nrf91_rtcDone(void);
 
+
+extern void _nrf91_rtcClear(void);
 
 // extern void _stm32_wdgReload(void);
 

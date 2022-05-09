@@ -29,6 +29,8 @@ extern int usleep(useconds_t usecs);
 
 int main(void)
 {
+	time_t timestamp;
+	u8 state = low;
 	int j;
 	volatile unsigned int *vmc_powerset_secure_base = (unsigned int *)0x5003A604; //+ 0x608;
 	volatile unsigned int *gpio_secure_base_dir_base = (unsigned int *)0x50842500;
@@ -79,7 +81,19 @@ int main(void)
 	// 	usleep(500000);
 	// }
 	hal_init();
-
+	_nrf91_gpioConfig(2, output, nopull);
+	for (int i = 0; i <=10; i++) {
+		timestamp = hal_timerGet();
+		while ((hal_timerGet() - timestamp) <= 10000) ;
+		if (state == low) {
+			_nrf91_gpioSet(2, high);
+			state = high;
+		}
+		else {
+			_nrf91_gpioSet(2, low);
+			state = low;
+		}
+	}
 	// *gpio_secure_base_dirset = 1u << 3;
 
 	// *gpio_secure_base_outset = 1u << 3;
@@ -91,6 +105,8 @@ int main(void)
 
 	_nrf91_gpioSet(2, high);
 	_nrf91_gpioSet(3, high);
+	// _nrf91_gpioConfig(4, output, nopull);
+	// _nrf91_gpioSet(4, high);
 
 	// _nrf91_gpioSet(2, low);
 	// _nrf91_gpioSet(3, low);

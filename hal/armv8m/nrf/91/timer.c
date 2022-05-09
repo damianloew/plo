@@ -13,51 +13,55 @@
  * %LICENSE%
  */
 
-// #include <hal/hal.h>
-// #include "stm32l4.h"
+#include <hal/hal.h>
+#include "nrf91.h"
 
-// #define SYSTICK_IRQ 15
+/* based on 0x14 in peripheral base address */
+#define RTC0_IRQ 20
+// #define RTC0_IRQ 36
 
-// struct {
-// 	volatile time_t time;
-// 	unsigned int interval;
-// } timer_common;
-
-
-// static int timer_isr(unsigned int irq, void *data)
-// {
-// 	(void)irq;
-// 	(void)data;
-
-// 	timer_common.time += (timer_common.interval + 500) / 1000;
-// 	hal_cpuDataSyncBarrier();
-// 	return 0;
-// }
+struct {
+	volatile time_t time;
+	unsigned int interval;
+} timer_common;
 
 
-// time_t hal_timerGet(void)
-// {
-// 	time_t val;
+static int timer_isr(unsigned int irq, void *data)
+{
+	(void)irq;
+	(void)data;
 
-// 	hal_interruptsDisable();
-// 	val = timer_common.time;
-// 	hal_interruptsEnable();
-
-// 	return val;
-// }
-
-
-// void timer_done(void)
-// {
-// 	_stm32_systickDone();
-// 	hal_interruptsSet(SYSTICK_IRQ, NULL, NULL);
-// }
+	_nrf91_rtcClearEvent();
+	/* in fact += 1.007 ms */
+	timer_common.time += 1;
+	hal_cpuDataSyncBarrier();
+	return 0;
+}
 
 
-// void timer_init(void)
-// {
-// 	timer_common.time = 0;
-// 	timer_common.interval = 1000;
-// 	_stm32_systickInit(timer_common.interval);
-// 	hal_interruptsSet(SYSTICK_IRQ, timer_isr, NULL);
-// }
+time_t hal_timerGet(void)
+{
+	time_t val;
+
+	hal_interruptsDisable();
+	val = timer_common.time;
+	hal_interruptsEnable();
+
+	return val;
+}
+
+
+void timer_done(void)
+{
+	_nrf91_rtckDone();
+	hal_interruptsSet(RTC0_IRQ, NULL, NULL);
+}
+
+
+void timer_init(void)
+{
+	timer_common.time = 0;
+	timer_common.interval = 1000;
+	_nrf91_rtcInit(timer_common.interval);
+	hal_interruptsSet(RTC0_IRQ, timer_isr, NULL);
+}

@@ -35,8 +35,8 @@
 /* Console */
 extern void console_init(void);
 
-// /* Interrupts */
-// extern void interrupts_init(void);
+/* Interrupts */
+extern void interrupts_init(void);
 
 
 void hal_init(void)
@@ -44,20 +44,20 @@ void hal_init(void)
 	hal_cpuInit();
 
 	_nrf91_init();
-	// interrupts_init();
+	interrupts_init();
 
-	// mpu_init();
-	// timer_init();
+	// mpu_init(); /* where is mpu located, do I need it here ? */
+	timer_init(); /* i have to use rtc probably here */
 	console_init();
 
 	// hal_common.entry = (addr_t)-1;
 }
 
 
-// void hal_done(void)
-// {
-// 	timer_done();
-// }
+void hal_done(void)
+{
+	timer_done();
+}
 
 
 // void hal_syspageSet(hal_syspage_t *hs)
