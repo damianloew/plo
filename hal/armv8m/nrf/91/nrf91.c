@@ -24,6 +24,7 @@ static struct {
 	// volatile u32 *pwr;
 	volatile u32 *gpio;
 	volatile u32 *rtc[2];
+	volatile u32 *timer[3];
 	// volatile u32 *syscfg;
 	// volatile u32 *iwdg;
 	// volatile u32 *flash;
@@ -56,6 +57,12 @@ enum { gpio_out = 1, gpio_outset, gpio_outclr, gpio_in, gpio_dir, gpio_dirsetout
 enum { rtc_tasks_start = 0, rtc_tasks_stop, rtc_tasks_clear, rtc_events_tick = 64, 
 	rtc_events_compare0 = 80, rtc_events_compare1, rtc_events_compare2, rtc_events_compare3, rtc_intenset = 193, rtc_intenclr,
 	rtc_evten = 208, rtc_evtenset, rtc_evtenclr, rtc_prescaler = 322, rtc_cc0 = 336, rtc_cc1, rtc_cc2, rtc_cc3};
+
+enum { timer_tasks_start = 0, timer_tasks_stop, timer_tasks_count, timer_tasks_clear, timer_tasks_shutdown,
+	timer_tasks_capture0 = 16, timer_tasks_capture1, timer_tasks_capture2, timer_tasks_capture3, timer_tasks_capture4, timer_tasks_capture5,
+	timer_events_compare0 = 80, timer_events_compare1, timer_events_compare2, timer_events_compare3, timer_events_compare4, timer_events_compare5,
+	timer_intenset = 193, timer_intenclr, timer_mode = 321, timer_bitmode, timer_prescaler = 324,
+	timer_cc0 = 336, timer_cc1, timer_cc2, timer_cc3, timer_cc4, timer_cc5 };
 
 // enum { pwr_cr1 = 0, pwr_cr2, pwr_cr3, pwr_cr4, pwr_sr1, pwr_sr2, pwr_scr, pwr_pucra, pwr_pdcra, pwr_pucrb,
 // 	pwr_pdcrb, pwr_pucrc, pwr_pdcrc, pwr_pucrd, pwr_pdcrd, pwr_pucre, pwr_pdcre, pwr_pucrf, pwr_pdcrf,
@@ -342,6 +349,45 @@ void _nrf91_rtcClearEvent(void)
 }
 
 
+/* TIMER */
+
+
+int _nrf91_timerInit(u32 interval)
+{
+	/* Set timer mode */
+	*(nrf91_common.timer[0] + timer_mode) = 0u;
+	/* Set 16-bit mode */
+	*(nrf91_common.timer[0] + timer_bitmode) = 0u;
+	/* 1 tick per 1 us */
+	*(nrf91_common.timer[0] + timer_prescaler) = 4u;
+	/* 1 compare event per 1ms */
+	*(nrf91_common.timer[0] + timer_cc0) = 1000u;
+	/* Enable interrupts from compare0 events */
+	*(nrf91_common.timer[0] + rtc_intenset) = 0x10000;
+
+	/* Clear and start timer0 */
+	*(nrf91_common.timer[0] + timer_tasks_clear) = 1u;
+	*(nrf91_common.timer[0] + timer_tasks_start) = 1u;
+	return 0;
+}
+
+
+void _nrf91_timerDone(void)
+{
+	/* Stop timer */
+	*(nrf91_common.timer[0] + timer_tasks_stop) = 1u;
+}
+
+
+void _nrf91_timerClearEvent(void)
+{
+	/* Clear compare event */
+	*(nrf91_common.timer[0] + timer_events_compare0) = 0u;
+	/* Clear counter */
+	*(nrf91_common.timer[0] + timer_tasks_clear) = 1u;
+}
+
+
 /* GPIO */
 
 
@@ -490,6 +536,9 @@ void _nrf91_init(void)
 	nrf91_common.gpio = (void *)0x50842500;
 	nrf91_common.rtc[0] = (void *)0x50014000;
 	nrf91_common.rtc[1] = (void *)0x50015000;
+	nrf91_common.timer[0] = (void *)0x5000F000;
+	nrf91_common.timer[1] = (void *)0x50010000;
+	nrf91_common.timer[2] = (void *)0x50011000;
 	// stm32_common.gpio[1] = (void *)0x48000400; /* GPIOB */
 	// stm32_common.gpio[2] = (void *)0x48000800; /* GPIOC */
 	// stm32_common.gpio[3] = (void *)0x48000c00; /* GPIOD */

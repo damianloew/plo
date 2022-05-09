@@ -16,8 +16,9 @@
 #include <hal/hal.h>
 #include "nrf91.h"
 
-/* based on 0x14 in peripheral base address */
+/* based on peripheral id table */
 #define RTC0_IRQ 20
+#define TIMER0_IRQ 15
 // #define RTC0_IRQ 36
 
 struct {
@@ -31,8 +32,8 @@ static int timer_isr(unsigned int irq, void *data)
 	(void)irq;
 	(void)data;
 
-	_nrf91_rtcClearEvent();
-	/* in fact += 1.007 ms */
+	_nrf91_timerClearEvent();
+	/* in fact += 1.007 ms - rtc*/
 	timer_common.time += 1;
 	hal_cpuDataSyncBarrier();
 	return 0;
@@ -62,6 +63,6 @@ void timer_init(void)
 {
 	timer_common.time = 0;
 	timer_common.interval = 1000;
-	_nrf91_rtcInit(timer_common.interval);
-	hal_interruptsSet(RTC0_IRQ, timer_isr, NULL);
+	_nrf91_timerInit(timer_common.interval);
+	hal_interruptsSet(TIMER0_IRQ, timer_isr, NULL);
 }
