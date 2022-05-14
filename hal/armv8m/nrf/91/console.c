@@ -53,13 +53,11 @@ void hal_consolePrint(const char *s)
 	while ( *(halconsole_common.base + uarte_events_endtx) != 1u )
 		;
 	*(halconsole_common.base + uarte_events_endtx) = 0u;
-
 }
 
 
 void console_init(void)
 {
-	/* TODO: check if there is a possibility to change uart clock and then add it in structure*/
 	struct {
 		void *base;
 	} uarts[] = {
@@ -69,22 +67,11 @@ void console_init(void)
 		{ (void *)UART3_BASE }
 	};
 
-	char *ram0 = (char *)0x20000000;
-	char *ram1 = (char *)0x20008000;
-
 	/* default uart instance for nrf9160 dk, connected to VCOM0 */
 	const u8 uart = 0, txpin = 29, rxpin = 28, rtspin = 27, ctspin = 26, led1pin = 2, led2pin = 3; 
 	unsigned int reg = 6, errsrc = 0;
 
 	halconsole_common.base = uarts[uart].base;
-
-	// _nrf91_gpioConfig(2, output);
-	// _nrf91_gpioSet(2, high);
-
-	// _nrf91_gpioConfig(led2pin, output);
-	// _nrf91_gpioSet(led2pin, high);
-	// _nrf91_gpioSet(led2pin, low);
-
 
 	/* Init pins according to nrf9160 product specification */
 	_nrf91_gpioConfig(txpin, output, nopull);
@@ -107,60 +94,21 @@ void console_init(void)
 	/* Default settings - hardware flow control disabled, exclude parity bit, one stop bit */
 	*(halconsole_common.base + uarte_config) = 0u;
 
-	/* Set default max number of bytes in specific buffers to 64 4095 and 6*/
-	*(halconsole_common.base + uarte_txd_maxcnt) = 15u;
+	/* Set default max number of bytes in specific buffers to 4095 */
+	*(halconsole_common.base + uarte_txd_maxcnt) = 0xFFF;
 	*(halconsole_common.base + uarte_rxd_maxcnt) = 0xFFF;
 
 	/* Set default uart sources: ram0 and ram1 start addresses */
-	*(halconsole_common.base + uarte_txd_ptr) = (u32)ram0;
-	*(halconsole_common.base + uarte_rxd_ptr) = (u32)ram1;
+	*(halconsole_common.base + uarte_txd_ptr) = 0x20000000;
+	*(halconsole_common.base + uarte_txd_ptr) = 0x20008000;
 
-	/* disable all interrupts */
+	/* disable all uart interrupts */
 	*(halconsole_common.base + uarte_intenclr) = 0xFFFFFFFF;
 
-	ram0[0] = 'H';
-	ram0[1] = 'e';
-	ram0[2] = 'l';
-	ram0[3] = 'l';
-	ram0[4] = 'o';
-	ram0[5] = '!';
-
-
 	*(halconsole_common.base + uarte_enable) = 0x8;
-	reg = *(halconsole_common.base + uarte_events_error);
+
 	/* Wait for cts activation - assuming that it should be active all the time */
 	while ( *(halconsole_common.base + uarte_events_cts) != 1u )
 		;
 	*(halconsole_common.base + uarte_events_cts) = 0u;
-
-	// *(halconsole_common.base + uarte_starttx) = 1u;
-	// while ( *(halconsole_common.base + uarte_events_txstarted) != 1u )
-	// 	;
-	// *(halconsole_common.base + uarte_events_txstarted) = 0u;
-
-	// while ( *(halconsole_common.base + uarte_events_txdrdy) != 1u ) ; *(halconsole_common.base + uarte_events_txdrdy) = 0u; //1 byte are transferred
-	// while ( *(halconsole_common.base + uarte_events_txdrdy) != 1u ) ; *(halconsole_common.base + uarte_events_txdrdy) = 0u;
-	// while ( *(halconsole_common.base + uarte_events_txdrdy) != 1u ) ; *(halconsole_common.base + uarte_events_txdrdy) = 0u;
-	// while ( *(halconsole_common.base + uarte_events_txdrdy) != 1u ) ; *(halconsole_common.base + uarte_events_txdrdy) = 0u;
-	// while ( *(halconsole_common.base + uarte_events_txdrdy) != 1u ) ; *(halconsole_common.base + uarte_events_txdrdy) = 0u;
-	// while ( *(halconsole_common.base + uarte_events_txdrdy) != 1u ) ; *(halconsole_common.base + uarte_events_txdrdy) = 0u;
-	// while ( *(halconsole_common.base + uarte_events_endtx) != 1u ) ;
-	// errsrc = *(halconsole_common.base + uarte_errorsrc);
-	// reg = *(halconsole_common.base + uarte_txd_amount);
-	// reg = 2;
-	// TODO: set config ??
-	// _stm32_rccSetDevClock(uarts[uart].uart, 1);
-
-	// halconsole_common.cpufreq = _stm32_rccGetCPUClock();
-
-	// /* Set up UART to 9600,8,n,1 16-bit oversampling */
-	// *(halconsole_common.base + cr1) &= ~1UL; /* disable USART */
-	// hal_cpuDataMemoryBarrier();
-	// *(halconsole_common.base + cr1) = 0xa;
-	// *(halconsole_common.base + cr2) = 0;
-	// *(halconsole_common.base + cr3) = 0;
-	// *(halconsole_common.base + brr) = halconsole_common.cpufreq / 115200; /* 115200 baud rate */
-	// hal_cpuDataMemoryBarrier();
-	// *(halconsole_common.base + cr1) |= 1;
-	// hal_cpuDataMemoryBarrier();
 }

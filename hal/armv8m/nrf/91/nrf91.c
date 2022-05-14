@@ -304,18 +304,7 @@ enum { timer_tasks_start = 0, timer_tasks_stop, timer_tasks_count, timer_tasks_c
 
 int _nrf91_rtcInit(u32 interval)
 {
-	// /* 1 tick per 1.007 ms */
-	// *(nrf91_common.rtc[0] + rtc_prescaler) = 32u;
-	// // *(nrf91_common.rtc[0] + rtc_prescaler) = 32999u; //temp - tick every 1s
-	// /* Enable triggering tick events */
-	// *(nrf91_common.rtc[0] + rtc_evtenset) = 1u;
-	// /* Enable interrupts from tick events */
-	// *(nrf91_common.rtc[0] + rtc_intenset) = 1u;
-
-	// /* Start RTC */
-	// *(nrf91_common.rtc[0] + rtc_tasks_start) = 1u;
-
-	/* 1 tick per 1.007 ms */
+	/* 1 tick per 1.007 ms - in theory, in fact it's much different */
 	*(nrf91_common.rtc[0] + rtc_prescaler) = 0u;
 	// *(nrf91_common.rtc[0] + rtc_prescaler) = 32999u; //temp - tick every 1s
 	*(nrf91_common.rtc[0] + rtc_cc0) = 33u;
@@ -340,8 +329,6 @@ void _nrf91_rtcDone(void)
 
 void _nrf91_rtcClearEvent(void)
 {
-	// /* Clear tick event */
-	// *(nrf91_common.rtc[0] + rtc_events_tick) = 0u;
 	/* Clear compare event */
 	*(nrf91_common.rtc[0] + rtc_events_compare0) = 0u;
 	/* Clear counter */

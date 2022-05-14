@@ -28,7 +28,7 @@ enum { nvic_iser = 0, nvic_icer = 32, nvic_ispr = 64, nvic_icpr = 96, nvic_iabr 
 
 struct{
 	intr_handler_t irqs[SIZE_INTERRUPTS];
-	volatile u32 *nvic; //was u32 before
+	volatile u32 *nvic;
 } irq_common;
 
 
@@ -46,7 +46,7 @@ static void interrupts_nvicSetPriority(s8 irqn, u32 priority)
 {
 	volatile u32 *ptr;
 
-	ptr = ((u32 *)(irq_common.nvic + nvic_ip)) + (irqn / 4); //TODO: complete this function
+	ptr = ((u32 *)(irq_common.nvic + nvic_ip)) + (irqn / 4);
 
 	*ptr = (priority << (8 * (irqn % 4)));
 }
@@ -64,7 +64,6 @@ void hal_interruptsDisable(void)
 }
 
 
-/* if isr is set to NULL - disables the interrupt */
 int hal_interruptsSet(unsigned int irq, int (*isr)(unsigned int, void *), void *data)
 {
 	if (irq >= SIZE_INTERRUPTS)
@@ -74,8 +73,8 @@ int hal_interruptsSet(unsigned int irq, int (*isr)(unsigned int, void *), void *
 	irq_common.irqs[irq].isr = isr;
 	irq_common.irqs[irq].data = data;
 
+	/* when isr is set to NULL - disables the interrupt */
 	if (isr == NULL) {
-		/* there was irq - 0x10 before, but it requires adding 16 to irq number */
 		interrupts_nvicSetIRQ(irq, 0);
 	}
 	else {

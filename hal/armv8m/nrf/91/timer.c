@@ -5,8 +5,8 @@
  *
  * Timer driver
  *
- * Copyright 2021 Phoenix Systems
- * Author: Aleksander Kaminski
+ * Copyright 2022 Phoenix Systems
+ * Author: Damian Loewnau
  *
  * This file is part of Phoenix-RTOS.
  *
@@ -19,7 +19,6 @@
 /* based on peripheral id table */
 #define RTC0_IRQ 20
 #define TIMER0_IRQ 15
-// #define RTC0_IRQ 36
 
 struct {
 	volatile time_t time;
@@ -33,7 +32,6 @@ static int timer_isr(unsigned int irq, void *data)
 	(void)data;
 
 	_nrf91_timerClearEvent();
-	/* in fact += 1.007 ms - rtc*/
 	timer_common.time += 1;
 	hal_cpuDataSyncBarrier();
 	return 0;

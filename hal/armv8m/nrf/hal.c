@@ -46,10 +46,12 @@ void hal_init(void)
 	_nrf91_init();
 	interrupts_init();
 
-	// mpu_init(); /* where is mpu located, do I need it here ? */
-	timer_init(); /* i have to use rtc probably here */
+	/* where is mpu located, do I need it here ? */
+	// mpu_init();
+	timer_init();
 	console_init();
 
+	/* TODO: uncomment after adding syspage */
 	// hal_common.entry = (addr_t)-1;
 }
 
