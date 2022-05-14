@@ -81,6 +81,7 @@ int main(void)
 	// 	usleep(500000);
 	// }
 	hal_init();
+	hal_consolePrint("hello from nrf9160 plo!\n");
 	_nrf91_gpioConfig(2, output, nopull);
 	for (int i = 0; i <=10; i++) {
 		timestamp = hal_timerGet();
