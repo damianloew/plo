@@ -18,7 +18,6 @@
 
 #include <hal/hal.h>
 
-
 enum { flagSyspageExec = 0x01 };
 
 

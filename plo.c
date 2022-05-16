@@ -15,10 +15,10 @@
  */
 
 #include <hal/hal.h>
-// #include <lib/lib.h>
+#include <lib/lib.h>
 // #include <cmds/cmd.h>
 // #include <devices/devs.h>
-// #include <syspage.h>
+#include <syspage.h>
 
 #include "nrf91.h"
 
@@ -26,7 +26,7 @@ int main(void)
 {
 	hal_init();
 	hal_consolePrint("Hello from nrf9160 plo!\n");
-	// syspage_init();
+	syspage_init();
 
 	// lib_printf(CONSOLE_CLEAR CONSOLE_BOLD "Phoenix-RTOS loader v. " VERSION CONSOLE_NORMAL);
 	// lib_printf(CONSOLE_CURSOR_HIDE CONSOLE_MAGENTA "\nhal: %s", hal_cpuInfo());

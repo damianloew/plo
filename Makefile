@@ -28,7 +28,7 @@ include hal/$(TARGET_SUFF)/Makefile
 # include cmds/Makefile
 
 
-OBJS += $(addprefix $(PREFIX_O), _startc.o plo.o) #syspage.o
+OBJS += $(addprefix $(PREFIX_O), _startc.o plo.o syspage.o)
 
 
 .PHONY: all base ram clean
