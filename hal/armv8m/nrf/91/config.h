@@ -29,12 +29,12 @@
 #include "../../cpu.h"
 // #include "../../mpu.h"
 
-// #define PATH_KERNEL "phoenix-armv7m4-stm32l4x6.elf"
+#define PATH_KERNEL "phoenix-armv8m33-nrf9160.elf"
 
 #endif
 
 
-// /* Import platform specific definitions */
-// #include "ld/armv7m4-stm32l4x6.ldt"
+/* Import platform specific definitions */
+#include "ld/armv8m33-nrf9160.ldt"
 
 #endif

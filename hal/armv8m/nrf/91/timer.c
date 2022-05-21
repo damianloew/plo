@@ -17,8 +17,8 @@
 #include "nrf91.h"
 
 /* based on peripheral id table */
-#define RTC0_IRQ 20
-#define TIMER0_IRQ 15
+#define RTC0_IRQ rtc0
+#define TIMER0_IRQ timer0
 
 struct {
 	volatile time_t time;
@@ -52,8 +52,8 @@ time_t hal_timerGet(void)
 
 void timer_done(void)
 {
-	_nrf91_rtckDone();
-	hal_interruptsSet(RTC0_IRQ, NULL, NULL);
+	_nrf91_timerDone();
+	hal_interruptsSet(TIMER0_IRQ, NULL, NULL);
 }
 
 

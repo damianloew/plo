@@ -24,14 +24,6 @@ static struct {
 
 
 // enum { cr1 = 0, cr2, cr3, brr, gtpr, rtor, rqr, isr, icr, rdr, tdr };
-enum { uarte_startrx = 0, uarte_stoprx, uarte_starttx, uarte_stoptx, 
-uarte_events_cts = 64, uarte_events_txdrdy = 71, uarte_events_endtx, uarte_events_error, uarte_events_txstarted = 84, 
-uarte_inten = 192, uarte_errorsrc = 288, uarte_intenset, uarte_intenclr, uarte_enable = 320, 
-uarte_psel_rts = 322, uarte_psel_txd, uarte_psel_cts, uarte_psel_rxd, uarte_baudrate = 329, 
-uarte_rxd_ptr = 333, uarte_rxd_maxcnt, uarte_rxd_amount, uarte_txd_ptr = 337, uarte_txd_maxcnt, uarte_txd_amount, 
-uarte_config = 347 };
-
-enum { baud_9600 = 0x00275000, baud_115200 = 0x01D60000 };
 
 
 void hal_consolePrint(const char *s)
@@ -68,7 +60,7 @@ void console_init(void)
 	};
 
 	/* default uart instance for nrf9160 dk, connected to VCOM0 */
-	const u8 uart = 0, txpin = 29, rxpin = 28, rtspin = 27, ctspin = 26, led1pin = 2, led2pin = 3; 
+	const u8 uart = 0, txpin = 29, rxpin = 28, rtspin = 27, ctspin = 26; 
 	unsigned int reg = 6, errsrc = 0;
 
 	halconsole_common.base = uarts[uart].base;

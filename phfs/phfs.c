@@ -278,6 +278,7 @@ ssize_t phfs_read(handler_t handler, addr_t offs, void *buff, size_t len)
 	phfs_file_t *file;
 	phfs_device_t *pd;
 
+	lib_printf("handler descriptor = %d\n", handler.pd);
 	if (handler.pd >= SIZE_PHFS_HANDLERS)
 		return -EINVAL;
 
@@ -296,7 +297,7 @@ ssize_t phfs_read(handler_t handler, addr_t offs, void *buff, size_t len)
 			if (handler.id >= SIZE_PHFS_ALIASES)
 				return -EINVAL;
 			file = &phfs_common.files[handler.id];
-
+			lib_printf("here\n");
 			return devs_read(pd->major, pd->minor, file->addr + offs, buff, min(len, file->size - offs), PHFS_TIMEOUT_MS);
 
 		default:

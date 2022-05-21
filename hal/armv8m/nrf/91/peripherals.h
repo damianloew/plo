@@ -22,34 +22,30 @@
 /* Interrupts ICTR should be read to verify this, 480 is max for m33 processor */
 #define SIZE_INTERRUPTS 480
 
-// /* UART */
-// #define UART_MAX_CNT 5
+/* UART */
+#define UART_MAX_CNT 4
 
-// #ifndef UART1
-// #define UART1 0
-// #endif
+#ifndef UART0
+#define UART0 1
+#endif
 
-// #ifndef UART2
-// #define UART2 1
-// #endif
+#ifndef UART1
+#define UART1 0
+#endif
 
-// #ifndef UART3
-// #define UART3 0
-// #endif
+#ifndef UART2
+#define UART2 0
+#endif
 
-// #ifndef UART4
-// #define UART4 0
-// #endif
+#ifndef UART3
+#define UART3 0
+#endif
 
-// #ifndef UART5
-// #define UART5 0
-// #endif
+#ifndef UART_CONSOLE
+#define UART_CONSOLE 2
+#endif
 
-// #ifndef UART_CONSOLE
-// #define UART_CONSOLE 2
-// #endif
-
-// #define UART_BAUDRATE 115200
+#define UART_BAUDRATE 9600
 
 #define UART0_BASE ((void *)0x50008000)
 #define UART1_BASE ((void *)0x50009000)
@@ -62,14 +58,12 @@
 // #define UART4_CLK pctl_uart4
 // #define UART5_CLK pctl_uart5
 
-// #define UART1_IRQ usart1_irq
-// #define UART2_IRQ usart2_irq
-// #define UART3_IRQ usart3_irq
-// #define UART4_IRQ uart4_irq
-// #define UART5_IRQ uart5_irq
+#define UART0_IRQ uarte0
+#define UART1_IRQ uarte1
+#define UART2_IRQ uarte2
+#define UART3_IRQ uarte3
 
-// #define FLASH_PROGRAM_1_ADDR    0x08000000
-// #define FLASH_PROGRAM_2_ADDR    0x08080000
-// #define FLASH_PROGRAM_BANK_SIZE (512 * 1024)
+#define FLASH_PROGRAM_1_ADDR    0x00000000
+#define FLASH_PROGRAM_BANK_SIZE (1024 * 1024)
 
 #endif

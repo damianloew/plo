@@ -70,7 +70,7 @@ void hal_syspageSet(hal_syspage_t *hs)
 
 const char *hal_cpuInfo(void)
 {
-	return "Cortex-M4 STM32L4x6";
+	return "Cortex-M33 NRF9160";
 }
 
 
@@ -95,7 +95,8 @@ void hal_kernelEntryPoint(addr_t addr)
 
 int hal_memoryAddMap(addr_t start, addr_t end, u32 attr, u32 mapId)
 {
-	return mpu_regionAlloc(start, end, attr, mapId, 1);
+	// return mpu_regionAlloc(start, end, attr, mapId, 1); #TODO: mpu: add if needed
+	return 0;
 }
 
 
@@ -176,7 +177,7 @@ int hal_cpuJump(void)
 
 	hal_interruptsDisable();
 
-	mpu_getHalData(hal_common.hs);
+	// mpu_getHalData(hal_common.hs); #TODO: mpu: add if needed
 
 	__asm__ volatile("mov r9, %1; \
 		 blx %0"

@@ -323,7 +323,7 @@ int _nrf91_rtcInit(u32 interval)
 void _nrf91_rtcDone(void)
 {
 	/* Stop RTC */
-	*(nrf91_common.rtc[0] + rtc_tasks_start) = 1u;
+	*(nrf91_common.rtc[0] + rtc_tasks_stop) = 1u;
 }
 
 

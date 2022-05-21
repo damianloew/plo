@@ -45,6 +45,7 @@ static int cmd_call(int argc, char *argv[])
 
 	/* ARG_0: device name - argv[1]
 	 * ARG_1: script name - argv[2] */
+	lib_printf("devname = %s, script name = %s\n", argv[1], argv[0]);
 	if ((res = phfs_open(argv[1], argv[2], 0, &h)) < 0) {
 		log_error("\nCan't open %s, on %s", argv[2], argv[1]);
 		return res;
@@ -57,6 +58,7 @@ static int cmd_call(int argc, char *argv[])
 	}
 	offs += len;
 	buff[len] = '\0';
+	lib_printf("buff = %s\n", buff);
 
 	/* Check magic number */
 	if (hal_strcmp(buff, argv[3]) != 0) {

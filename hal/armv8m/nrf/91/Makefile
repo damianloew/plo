@@ -14,10 +14,10 @@ CFLAGS+= -mfloat-abi=soft
 
 GCCLIB := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
-PLO_COMMANDS = alias app call console copy dump echo go help kernelimg map mpu phfs reboot script wait
+PLO_COMMANDS = alias app call console copy dump echo go help kernelimg map phfs reboot script wait #TODO: mpu temporarily disabled
 
-# include devices/uart-stm32l4x6/Makefile
-# include devices/flash-stm32/Makefile
+include devices/uart-nrf9160/Makefile
+include devices/flash-nrf9160/Makefile
 
 OBJS += $(addprefix $(PREFIX_O)hal/$(TARGET_SUFF)/nrf/91/, _init.o nrf91.o timer.o console.o)
 # OBJS += $(addprefix $(PREFIX_O)hal/$(TARGET_SUFF)/stm32/l4/, _init.o stm32l4.o timer.o console.o)
