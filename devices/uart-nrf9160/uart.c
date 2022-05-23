@@ -18,10 +18,20 @@
 #include <lib/lib.h>
 #include <devices/devs.h>
 
+#define BUFFER_SIZE 0x20
 
 typedef struct {
 	volatile unsigned int *base;
-	volatile unsigned int cnt;
+	unsigned int irq;
+
+	u16 rxFifoSz;
+	u16 txFifoSz;
+
+	u8 dataRx[BUFFER_SIZE];
+	cbuffer_t cbuffRx;
+
+	u8 dataTx[BUFFER_SIZE];
+	cbuffer_t cbuffTx;
 } uart_t;
 
 
@@ -66,6 +76,73 @@ static uart_t *uart_getInstance(unsigned int minor)
 
 static int uart_handleIntr(unsigned int irq, void *buff)
 {
+	char c;
+	char *ram1 = (char *)0x20008000;
+	char *ram0 = (char *)0x20000000;
+	u32 flags;
+	uart_t *uart = (uart_t *)buff;
+	u32 rxcount = 0;
+
+	_nrf91_gpioSet(2, high);
+
+	if (uart == NULL)
+		return 0;
+
+	// /* clear rxdrdy event flag */
+	// *(uart->base + uarte_events_rxdrdy) = 0u;
+
+	/* clear endrx event flag */
+	*(uart->base + uarte_events_endrx) = 0u;
+
+	/* maybe not needed ? */
+	*(uart->base + uarte_flushrx) = 1u;
+
+	*(uart->base + uarte_startrx) = 1u;
+	// /* clear rxto event flag */
+	// *(uart->base + uarte_events_rxto) = 0u;
+
+	/* Check how many bytes have been read */
+	rxcount = *(uart->base + uarte_rxd_amount);
+
+	for (int i = 0; i < rxcount; i++) {
+		lib_cbufWrite(&uart->cbuffRx, &ram1[i], 1);
+	}
+	// /* Error flags: parity, framing, noise, overrun */
+	// flags = *(uart->base + statr) & (0xf << 16);
+
+	// /* RX overrun: invalidate fifo */
+	// if (flags & (1 << 19))
+	// 	*(uart->base + fifor) |= 1 << 14;
+
+	// *(uart->base + statr) |= flags;
+
+	// /* Receive */
+	// while (uart_getRXcount(uart)) {
+	// 	c = *(uart->base + datar);
+	// 	lib_cbufWrite(&uart->cbuffRx, &c, 1);
+	// }
+
+	/* Transmit */
+	for (int i = 0; i < rxcount; i++) {
+		lib_cbufRead(&uart->cbuffTx, &ram0[i], 1);
+	}
+	uart_send(uart, rxcount);
+
+
+	// while (uart_getTXcount(uart) < uart->txFifoSz) {
+	// 	if (!lib_cbufEmpty(&uart->cbuffTx)) {
+	// 		lib_cbufRead(&uart->cbuffTx, &c, 1);
+	// 		*(uart->base + datar) = c;
+	// 	}
+	// 	else {
+	// 		*(uart->base + ctrlr) &= ~(1 << 23);
+	// 		break;
+	// 	}
+	// }
+
+	return 0;
+
+
 	// uart_t *uart = (uart_t *)buff;
 
 	// if (*(uart->base + isr) & ((1 << 5) | (1 << 3))) {
@@ -82,57 +159,70 @@ static int uart_handleIntr(unsigned int irq, void *buff)
 	// 	uart->rxflag = 1;
 	// }
 
-	return 0;
+	// return 0;
 }
 
 /* Device interface */
 
 static ssize_t uart_read(unsigned int minor, addr_t offs, void *buff, size_t len, time_t timeout)
 {
+
 	// uart_t *uart;
 	// size_t cnt;
-	// time_t start;
+	// char *ram1 = (char *)0x20008000;
+	// char *chbuff = (char *)buff;
 
+	// if ((uart = uart_getInstance(minor)) == NULL)
+	// 	return -EINVAL;
+
+	// if (len == 0)
+	// 	return 0;
+	// /* read last n unread bytes */
+	// for (cnt = 0; cnt < len; cnt++, uart->cnt++) {
+	// 	((unsigned char *)buff)[cnt] = ram1[uart->cnt];
+	// }
+
+	// return (ssize_t)cnt;
+
+	/* below is copy from imxrt106x */
+	size_t res;
 	uart_t *uart;
-	size_t cnt;
-	char *ram1 = (char *)0x20008000;
-	char *chbuff = (char *)buff;
+	time_t start;
 
 	if ((uart = uart_getInstance(minor)) == NULL)
 		return -EINVAL;
 
-	if (len == 0)
-		return 0;
-	/* read last n unread bytes */
-	for (cnt = 0; cnt < len; cnt++, uart->cnt++) {
-		((unsigned char *)buff)[cnt] = ram1[uart->cnt];
+	start = hal_timerGet();
+	while (lib_cbufEmpty(&uart->cbuffRx)) {
+		if ((hal_timerGet() - start) >= timeout)
+			return -ETIME;
 	}
-	// hal_interruptsDisable();
+
+	hal_interruptsDisable();
+	res = lib_cbufRead(&uart->cbuffRx, buff, len);
+	hal_interruptsEnable();
+
+	return res;
+}
 
 
+void uart_send(uart_t *uart, size_t len)
+{
+	*(uart->base + uarte_txd_maxcnt) = len;
+	*(uart->base + uarte_starttx) = 1u;
+	while ( *(uart->base + uarte_events_txstarted) != 1u )
+		;
+	*(uart->base + uarte_events_txstarted) = 0u;
 
-	// for (cnt = 0; cnt < len; ++cnt) {
-	// 	uart->rxflag = 0;
-	// 	if (uart->rxdr == uart->rxdw) {
-	// 		hal_interruptsEnable();
-	// 		start = hal_timerGet();
-	// 		while (!uart->rxflag) {
-	// 			if ((hal_timerGet() - start) >= timeout)
-	// 				return -ETIME;
-	// 		}
-	// 		hal_interruptsDisable();
-	// 	}
-	// 	((unsigned char *)buff)[cnt] = uart->rxdfifo[uart->rxdr++];
-	// 	uart->rxdr %= sizeof(uart->rxdfifo);
-	// }
-	// hal_interruptsEnable();
-
-	return (ssize_t)cnt;
+	while ( *(uart->base + uarte_events_endtx) != 1u )
+		;
+	*(uart->base + uarte_events_endtx) = 0u;
 }
 
 
 static ssize_t uart_write(unsigned int minor, const void *buff, size_t len)
 {
+	/* sth wrong here */
 	uart_t *uart;
 	size_t cnt;
 	char *ram0 = (char *)0x20000000;
@@ -146,15 +236,7 @@ static ssize_t uart_write(unsigned int minor, const void *buff, size_t len)
 	}
 
 	*(uart->base + uarte_txd_ptr) = (volatile u32 *)ram0;
-	*(uart->base + uarte_txd_maxcnt) = len;
-	*(uart->base + uarte_starttx) = 1u;
-	while ( *(uart->base + uarte_events_txstarted) != 1u )
-		;
-	*(uart->base + uarte_events_txstarted) = 0u;
-
-	while ( *(uart->base + uarte_events_endtx) != 1u )
-		;
-	*(uart->base + uarte_events_endtx) = 0u;
+	uart_send(uart, len);
 
 	return (ssize_t)cnt;
 }
@@ -168,12 +250,17 @@ static ssize_t uart_safeWrite(unsigned int minor, addr_t offs, const void *buff,
 
 static int uart_sync(unsigned int minor)
 {
+	// /* copy from imxrt106x */
 	// uart_t *uart;
 
 	// if ((uart = uart_getInstance(minor)) == NULL)
 	// 	return -EINVAL;
 
-	// while (!(*(uart->base + isr) & 0x40))
+	// while (!lib_cbufEmpty(&uart->cbuffTx))
+	// 	;
+
+	// /* Wait for transmission activity complete */
+	// while ((*(uart->base + statr) & (1 << 22)) == 0)
 	// 	;
 
 	return EOK;
@@ -235,6 +322,13 @@ static int uart_init(unsigned int minor)
 
 	uart->base = uartInfo[minor].base;
 
+	lib_cbufInit(&uart->cbuffTx, uart->dataTx, BUFFER_SIZE);
+	lib_cbufInit(&uart->cbuffRx, uart->dataRx, BUFFER_SIZE);
+	/* TODO: sizes???? not used anywhere ? */
+	uart->rxFifoSz = 32; //fifoSzLut[*(uart->base + fifor) & 0x7];
+	uart->txFifoSz = 32; //fifoSzLut[(*(uart->base + fifor) >> 4) & 0x7];
+
+	/* TODO: Skip controller initialization if it has been already done by hal */
 	/* Select pins */
 	*(uart->base + uarte_psel_txd) = uartInfo[minor].txpin;
 	*(uart->base + uarte_psel_rxd) = uartInfo[minor].rxpin;
@@ -249,14 +343,16 @@ static int uart_init(unsigned int minor)
 
 	/* Set default max number of bytes in specific buffers to 4095 */
 	*(uart->base + uarte_txd_maxcnt) = 0xFFF;
-	*(uart->base + uarte_rxd_maxcnt) = 0xFFF;
+	*(uart->base + uarte_rxd_maxcnt) = 1;
 
 	/* Set default uart sources: ram0 and ram1 start addresses */
 	*(uart->base + uarte_txd_ptr) = 0x20000000;
-	*(uart->base + uarte_txd_ptr) = 0x20008000;
+	*(uart->base + uarte_rxd_ptr) = 0x20008000;
 
-	/* disable all uart interrupts */
+	/* disable all uart interrupts TODO: enable rx interrupts ? */
 	*(uart->base + uarte_intenclr) = 0xFFFFFFFF;
+	/* enable rx timeout interruts */
+	*(uart->base + uarte_intenset) = 0x10; //0x20000; //timoeut //204
 
 	*(uart->base + uarte_enable) = 0x8;
 
@@ -266,7 +362,7 @@ static int uart_init(unsigned int minor)
 	// *(uart->base + uarte_events_cts) = 0u;
 
 	/* Counter that indicates how many bytes were read from ram1 buffer */
-	uart->cnt = 0;
+	// uart->cnt = 0;
 	/* Start uart receiver */
 	*(uart->base + uarte_startrx) = 1u;
 
@@ -280,8 +376,8 @@ static int uart_init(unsigned int minor)
 	// *(uart->base + cr1) = 0;
 	// hal_cpuDataMemoryBarrier();
 
-
-	// hal_interruptsSet(uartInfo[minor].irq, uart_handleIntr, (void *)uart);
+	lib_printf("\ndev/uart: Initializing uart(%d.%d)", DEV_UART, minor);
+	hal_interruptsSet(uartInfo[minor].irq, uart_handleIntr, (void *)uart);
 
 	return EOK;
 }

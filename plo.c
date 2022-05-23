@@ -30,6 +30,7 @@ int main(void)
 
 	lib_printf(CONSOLE_CLEAR CONSOLE_BOLD "Phoenix-RTOS loader v. " VERSION CONSOLE_NORMAL);
 	lib_printf(CONSOLE_CURSOR_HIDE CONSOLE_MAGENTA "\nhal: %s", hal_cpuInfo());
+	_nrf91_gpioConfig(2, output, nopull);
 	devs_init();
 	cmd_run();
 

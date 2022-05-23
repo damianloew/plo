@@ -88,7 +88,7 @@ void console_init(void)
 
 	/* Set default max number of bytes in specific buffers to 4095 */
 	*(halconsole_common.base + uarte_txd_maxcnt) = 0xFFF;
-	*(halconsole_common.base + uarte_rxd_maxcnt) = 0xFFF;
+	*(halconsole_common.base + uarte_rxd_maxcnt) = 1;
 
 	/* Set default uart sources: ram0 and ram1 start addresses */
 	*(halconsole_common.base + uarte_txd_ptr) = 0x20000000;
@@ -99,8 +99,8 @@ void console_init(void)
 
 	*(halconsole_common.base + uarte_enable) = 0x8;
 
-	/* Wait for cts activation - assuming that it should be active all the time */
-	while ( *(halconsole_common.base + uarte_events_cts) != 1u )
-		;
-	*(halconsole_common.base + uarte_events_cts) = 0u;
+	// /* Wait for cts activation - assuming that it should be active all the time */
+	// while ( *(halconsole_common.base + uarte_events_cts) != 1u )
+	// 	;
+	// *(halconsole_common.base + uarte_events_cts) = 0u;
 }
