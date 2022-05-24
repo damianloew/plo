@@ -22,6 +22,7 @@
 
 typedef struct {
 	volatile unsigned int *base;
+	unsigned int cnt;
 	unsigned int irq;
 
 	u16 rxFifoSz;
@@ -83,6 +84,12 @@ static int uart_handleIntr(unsigned int irq, void *buff)
 	uart_t *uart = (uart_t *)buff;
 	u32 rxcount = 0;
 
+	// /* clear endrx event flag */
+	// *(uart->base + uarte_events_endrx) = 0u;
+
+	/* clear endrx event flag */
+	*(uart->base + uarte_events_rxdrdy) = 0u;
+
 	_nrf91_gpioSet(2, high);
 
 	if (uart == NULL)
@@ -91,22 +98,21 @@ static int uart_handleIntr(unsigned int irq, void *buff)
 	// /* clear rxdrdy event flag */
 	// *(uart->base + uarte_events_rxdrdy) = 0u;
 
-	/* clear endrx event flag */
-	*(uart->base + uarte_events_endrx) = 0u;
-
 	/* maybe not needed ? */
-	*(uart->base + uarte_flushrx) = 1u;
+	// *(uart->base + uarte_flushrx) = 1u;
 
-	*(uart->base + uarte_startrx) = 1u;
+	// *(uart->base + uarte_startrx) = 1u;
 	// /* clear rxto event flag */
 	// *(uart->base + uarte_events_rxto) = 0u;
 
 	/* Check how many bytes have been read */
-	rxcount = *(uart->base + uarte_rxd_amount);
+	// rxcount = *(uart->base + uarte_rxd_amount);
 
-	for (int i = 0; i < rxcount; i++) {
-		lib_cbufWrite(&uart->cbuffRx, &ram1[i], 1);
-	}
+	// for (int i = 0; i < rxcount; i++) {
+	lib_cbufWrite(&uart->cbuffRx, &ram1[uart->cnt], 1);
+	uart->cnt++;
+	// }
+
 	// /* Error flags: parity, framing, noise, overrun */
 	// flags = *(uart->base + statr) & (0xf << 16);
 
@@ -123,11 +129,17 @@ static int uart_handleIntr(unsigned int irq, void *buff)
 	// }
 
 	/* Transmit */
-	for (int i = 0; i < rxcount; i++) {
-		lib_cbufRead(&uart->cbuffTx, &ram0[i], 1);
-	}
-	uart_send(uart, rxcount);
+	// for (int i = 0; i < rxcount; i++) {
+	// 	lib_cbufRead(&uart->cbuffTx, &ram0[i], 1);
+	// }
 
+	// int i = 0;
+	// while (!lib_cbufEmpty(&uart->cbuffTx)) {
+	// 	lib_cbufRead(&uart->cbuffTx, &ram0[i], 1);
+	// 	uart_send(uart, rxcount);
+	// 	i++;
+	// }
+	// uart_send(uart, (i+1));
 
 	// while (uart_getTXcount(uart) < uart->txFifoSz) {
 	// 	if (!lib_cbufEmpty(&uart->cbuffTx)) {
@@ -343,7 +355,7 @@ static int uart_init(unsigned int minor)
 
 	/* Set default max number of bytes in specific buffers to 4095 */
 	*(uart->base + uarte_txd_maxcnt) = 0xFFF;
-	*(uart->base + uarte_rxd_maxcnt) = 1;
+	*(uart->base + uarte_rxd_maxcnt) = 10;
 
 	/* Set default uart sources: ram0 and ram1 start addresses */
 	*(uart->base + uarte_txd_ptr) = 0x20000000;
@@ -352,7 +364,7 @@ static int uart_init(unsigned int minor)
 	/* disable all uart interrupts TODO: enable rx interrupts ? */
 	*(uart->base + uarte_intenclr) = 0xFFFFFFFF;
 	/* enable rx timeout interruts */
-	*(uart->base + uarte_intenset) = 0x10; //0x20000; //timoeut //204
+	*(uart->base + uarte_intenset) = 0x4; //0x10; //0x20000; //timoeut //204
 
 	*(uart->base + uarte_enable) = 0x8;
 
@@ -364,6 +376,7 @@ static int uart_init(unsigned int minor)
 	/* Counter that indicates how many bytes were read from ram1 buffer */
 	// uart->cnt = 0;
 	/* Start uart receiver */
+	uart->cnt = 0;
 	*(uart->base + uarte_startrx) = 1u;
 
 	// uart->base = uart->base;
