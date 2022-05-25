@@ -59,7 +59,6 @@ static ssize_t flashdrv_read(unsigned int minor, addr_t offs, void *buff, size_t
 		memptr = (void *)flashParams[minor].start;
 
 		hal_memcpy(buff, memptr + offs, len);
-		lib_printf("%x %x %x %x \n", buffchar[0], buffchar[1], buffchar[2], buffchar[3]);
 		ret = (ssize_t)len;
 	}
 

@@ -25,9 +25,8 @@
 int main(void)
 {
 	hal_init();
-	// hal_consolePrint("Hello from nrf9160 plo!\n");
 	syspage_init();
-
+	lib_printf("Sending dummy string to catch gibberish output right after restart");
 	lib_printf(CONSOLE_CLEAR CONSOLE_BOLD "Phoenix-RTOS loader v. " VERSION CONSOLE_NORMAL);
 	lib_printf(CONSOLE_CURSOR_HIDE CONSOLE_MAGENTA "\nhal: %s", hal_cpuInfo());
 	_nrf91_gpioConfig(2, output, nopull);

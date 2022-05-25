@@ -29,13 +29,14 @@ static struct {
 void hal_consolePrint(const char *s)
 {
 	char *ram0 = (char *)0x20000000;
-	int i;
+	int i = -1;
 
-	for (i = 0; *s != '\0'; i++) {
-		ram0[i] = *s++;
-	}
-
-	*(halconsole_common.base + uarte_txd_ptr) = (volatile u32 *)ram0;
+	do {
+		i++;
+		ram0[i] = s[i];
+	} while (s[i] != '\0');
+	i++;
+	*(halconsole_common.base + uarte_txd_ptr) = (u32 *)ram0;
 	*(halconsole_common.base + uarte_txd_maxcnt) = (u32)i;
 	*(halconsole_common.base + uarte_starttx) = 1u;
 	while ( *(halconsole_common.base + uarte_events_txstarted) != 1u )
@@ -81,7 +82,7 @@ void console_init(void)
 	*(halconsole_common.base + uarte_psel_cts) = ctspin;
 
 	/* Set baud rate to 9600, TODO: verify why uart with 115200 br doesn't work properly */
-	*(halconsole_common.base + uarte_baudrate) = baud_9600;
+	*(halconsole_common.base + uarte_baudrate) = baud_115200;
 
 	/* Default settings - hardware flow control disabled, exclude parity bit, one stop bit */
 	*(halconsole_common.base + uarte_config) = 0u;

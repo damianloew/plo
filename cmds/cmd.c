@@ -119,7 +119,6 @@ int cmd_parse(const char *script)
 	int ret, argc;
 	unsigned int i;
 
-	lib_printf("script = %s---\n", script);
 	for (;;) {
 		argc = cmd_parseArgLine(&script, argline, SIZE_CMD_ARG_LINE, argv, SIZE_CMD_ARGV);
 
@@ -135,10 +134,8 @@ int cmd_parse(const char *script)
 
 		/* Find command and launch associated function */
 		for (i = 0; i < SIZE_CMDS; i++) {
-			lib_printf("name = %s\n", cmd_common.cmds[i]->name);
 			if (hal_strcmp(argv[0], cmd_common.cmds[i]->name) != 0)
 				continue;
-			lib_printf("run\n");
 			if ((ret = cmd_common.cmds[i]->run(argc, argv)) < 0)
 				return ret;
 

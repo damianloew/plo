@@ -66,7 +66,7 @@ uarte_psel_rts = 322, uarte_psel_txd, uarte_psel_cts, uarte_psel_rxd, uarte_baud
 uarte_rxd_ptr = 333, uarte_rxd_maxcnt, uarte_rxd_amount, uarte_txd_ptr = 337, uarte_txd_maxcnt, uarte_txd_amount, 
 uarte_config = 347 };
 
-enum { baud_9600 = 0x00275000, baud_115200 = 0x01D60000 };
+enum { baud_9600 = 0x00275000, baud_19200 = 0x004EA000, baud_31250 = 0x00800000, baud_115200 = 0x01D60000, baud_250000 = 0x04000000 };
 
 // pvd_pvm_irq, rtc_tamper_stamp_irq, rtc_wkup_irq, flash_irq, rcc_irq,
 // 	exti0_irq, exti1_irq, exti2_irq, exti3_irq, exti4_irq, dma1_ch1_irq, dma1_ch2_irq,

@@ -86,14 +86,23 @@ static int uart_handleIntr(unsigned int irq, void *buff)
 
 	// /* clear endrx event flag */
 	// *(uart->base + uarte_events_endrx) = 0u;
-
-	/* clear endrx event flag */
-	*(uart->base + uarte_events_rxdrdy) = 0u;
-
-	_nrf91_gpioSet(2, high);
-
 	if (uart == NULL)
 		return 0;
+
+	if (uart->base + uarte_events_rxdrdy) {
+		/* clear rxdrdy event flag */
+		*(uart->base + uarte_events_rxdrdy) = 0u;
+		lib_cbufWrite(&uart->cbuffRx, &ram1[uart->cnt], 1);
+		uart->cnt++;
+	}
+	if (uart->base + uarte_events_endrx) {
+		/* clear endrx event flag */
+		*(uart->base + uarte_events_endrx) = 0u;
+		uart->cnt = 0;
+		*(uart->base + uarte_startrx) = 1u;
+
+	}
+	// _nrf91_gpioSet(2, high);
 
 	// /* clear rxdrdy event flag */
 	// *(uart->base + uarte_events_rxdrdy) = 0u;
@@ -109,8 +118,8 @@ static int uart_handleIntr(unsigned int irq, void *buff)
 	// rxcount = *(uart->base + uarte_rxd_amount);
 
 	// for (int i = 0; i < rxcount; i++) {
-	lib_cbufWrite(&uart->cbuffRx, &ram1[uart->cnt], 1);
-	uart->cnt++;
+	// lib_cbufWrite(&uart->cbuffRx, &ram1[uart->cnt], 1);
+	// uart->cnt++;
 	// }
 
 	// /* Error flags: parity, framing, noise, overrun */
@@ -243,11 +252,11 @@ static ssize_t uart_write(unsigned int minor, const void *buff, size_t len)
 	if ((uart = uart_getInstance(minor)) == NULL)
 		return -EINVAL;
 
-	for (cnt = 0; cnt < len; cnt++) {
-		ram0[cnt] = *chbuff++;
-	}
+	// for (cnt = 0; cnt < len; cnt++) {
+	// 	ram0[cnt] = *chbuff++; //use memcpy!!
+	// }
+	hal_memcpy(ram0, chbuff, len);
 
-	*(uart->base + uarte_txd_ptr) = (volatile u32 *)ram0;
 	uart_send(uart, len);
 
 	return (ssize_t)cnt;
@@ -348,14 +357,14 @@ static int uart_init(unsigned int minor)
 	*(uart->base + uarte_psel_cts) = uartInfo[minor].ctspin;
 
 	/* Set baud rate to 9600, TODO: verify why uart with 115200 br doesn't work properly */
-	*(uart->base + uarte_baudrate) = baud_9600;
+	*(uart->base + uarte_baudrate) = baud_115200; //works fine here
 
 	/* Default settings - hardware flow control disabled, exclude parity bit, one stop bit */
 	*(uart->base + uarte_config) = 0u;
 
 	/* Set default max number of bytes in specific buffers to 4095 */
 	*(uart->base + uarte_txd_maxcnt) = 0xFFF;
-	*(uart->base + uarte_rxd_maxcnt) = 10;
+	*(uart->base + uarte_rxd_maxcnt) = 32;
 
 	/* Set default uart sources: ram0 and ram1 start addresses */
 	*(uart->base + uarte_txd_ptr) = 0x20000000;
@@ -364,7 +373,7 @@ static int uart_init(unsigned int minor)
 	/* disable all uart interrupts TODO: enable rx interrupts ? */
 	*(uart->base + uarte_intenclr) = 0xFFFFFFFF;
 	/* enable rx timeout interruts */
-	*(uart->base + uarte_intenset) = 0x4; //0x10; //0x20000; //timoeut //204
+	*(uart->base + uarte_intenset) = 0x14; //0x10 - endrx, 0x04 - rxdrdy; //0x20000; //timoeut //204
 
 	*(uart->base + uarte_enable) = 0x8;
 
