@@ -3,17 +3,17 @@
  *
  * Operating system loader
  *
- * ARMv7 Cortex-M
+ * ARMv8 Cortex-M
  *
- * Copyright 2017, 2019, 2020 Phoenix Systems
- * Author: Aleksander Kaminski, Jan Sikorski, Hubert Buczynski
+ * Copyright 2017, 2019, 2020, 2022 Phoenix Systems
+ * Author: Aleksander Kaminski, Jan Sikorski, Hubert Buczynski, Damian Loewnau
  *
  * This file is part of Phoenix-RTOS.
  *
  * %LICENSE%
  */
 
-/* NOT VERIFIED, JUST COPIED FROM STM TARGET !!!! */
+/* TODO: verify that the copy from armv7 Cortex-M code is 100% correct for armv8 Cortex-M */
 
 #include "cpu.h"
 

@@ -14,8 +14,10 @@
  * %LICENSE%
  */
 
+/* TODO: verify that the copy from armv7 Cortex-M code is 100% correct for armv8 Cortex-M */
+
 #include <hal/string.h>
-// #include <hal/armv8m/nrf/types.h>
+
 
 void hal_memcpy(void *dst, const void *src, size_t l)
 {

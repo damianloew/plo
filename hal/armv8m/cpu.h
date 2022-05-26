@@ -3,15 +3,17 @@
  *
  * Operating system loader
  *
- * ARMv7 Cortex-M
+ * ARMv8 Cortex-M
  *
- * Copyright 2021 Phoenix Systems
- * Author: Hubert Buczynski
+ * Copyright 2021, 2022 Phoenix Systems
+ * Author: Hubert Buczynski, Damian Loewnau
  *
  * This file is part of Phoenix-RTOS.
  *
  * %LICENSE%
  */
+
+/* TODO: verify that the copy from armv7 Cortex-M code is 100% correct for armv8 Cortex-M */
 
 
 #ifndef _HAL_CPU_H_

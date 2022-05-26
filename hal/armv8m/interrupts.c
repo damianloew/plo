@@ -87,10 +87,10 @@ int hal_interruptsSet(unsigned int irq, int (*isr)(unsigned int, void *), void *
 }
 
 
-int hal_interruptDispatch(unsigned int exceptionNr)
+int hal_interruptDispatch(u32 exceptionNr)
 {
-	unsigned int irq = exceptionNr - 16;
-	if (irq_common.irqs[irq].isr == NULL) //was null
+	u32 irq = exceptionNr - 16;
+	if (irq_common.irqs[irq].isr == NULL)
 		return -1;
 
 	irq_common.irqs[irq].isr(irq, irq_common.irqs[irq].data);
