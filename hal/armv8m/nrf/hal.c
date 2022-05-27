@@ -46,13 +46,10 @@ void hal_init(void)
 	_nrf91_init();
 	interrupts_init();
 
-	/* where is mpu located, do I need it here ? */
-	// mpu_init();
 	timer_init();
 	console_init();
 
-	/* TODO: uncomment after adding syspage */
-	// hal_common.entry = (addr_t)-1;
+	hal_common.entry = (addr_t)-1;
 }
 
 
@@ -95,7 +92,6 @@ void hal_kernelEntryPoint(addr_t addr)
 
 int hal_memoryAddMap(addr_t start, addr_t end, u32 attr, u32 mapId)
 {
-	// return mpu_regionAlloc(start, end, attr, mapId, 1); #TODO: mpu: add if needed
 	return 0;
 }
 
@@ -176,8 +172,6 @@ int hal_cpuJump(void)
 		return -1;
 
 	hal_interruptsDisable();
-
-	// mpu_getHalData(hal_common.hs); #TODO: mpu: add if needed
 
 	__asm__ volatile("mov r9, %1; \
 		 blx %0"
