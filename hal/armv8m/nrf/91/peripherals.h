@@ -19,8 +19,8 @@
 
 /* Periperals configuration */
 
-/* Interrupts ICTR should be read to verify this, 480 is max for m33 processor */
-#define SIZE_INTERRUPTS 480
+/* Based on INTLINESNUM value (ICTR cpu register) */
+#define SIZE_INTERRUPTS 256
 
 /* UART */
 #define UART_MAX_CNT 4

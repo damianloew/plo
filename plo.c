@@ -36,8 +36,8 @@ int main(void)
 	lib_printf(CONSOLE_CURSOR_SHOW CONSOLE_NORMAL);
 	cmd_prompt();
 
-	// devs_done();
-	// hal_done();
+	devs_done();
+	hal_done();
 
 	int timestamp;
 	u8 state;
