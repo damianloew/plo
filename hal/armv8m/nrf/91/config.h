@@ -5,8 +5,8 @@
  *
  * Platform configuration file
  *
- * Copyright 2020, 2021 Phoenix Systems
- * Author: Hubert Buczynski, Aleksander Kaminski
+ * Copyright 2022 Phoenix Systems
+ * Author: Damian Loewnau
  *
  * This file is part of Phoenix-RTOS.
  *
@@ -27,7 +27,6 @@
 #include <phoenix/syspage.h>
 
 #include "../../cpu.h"
-// #include "../../mpu.h"
 
 #define PATH_KERNEL "phoenix-armv8m33-nrf9160.elf"
 

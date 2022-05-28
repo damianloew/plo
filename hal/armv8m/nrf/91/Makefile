@@ -1,7 +1,7 @@
 #
-# Makefile for Phoenix-RTOS loader (ARMv7M HAL stm32l4x6)
+# Makefile for Phoenix-RTOS loader (ARMv8M HAL nrf9160)
 #
-# Copyright 2021 Phoenix Systems
+# Copyright 2022 Phoenix Systems
 #
 # %LICENSE%
 #
@@ -14,10 +14,9 @@ CFLAGS+= -mfloat-abi=soft
 
 GCCLIB := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
-PLO_COMMANDS = alias app call console copy dump echo go help kernelimg map phfs reboot script wait #TODO: mpu temporarily disabled
+PLO_COMMANDS = alias app call console copy dump echo go help kernelimg map phfs reboot script wait
 
 include devices/uart-nrf9160/Makefile
 include devices/flash-nrf9160/Makefile
 
 OBJS += $(addprefix $(PREFIX_O)hal/$(TARGET_SUFF)/nrf/91/, _init.o nrf91.o timer.o console.o)
-# OBJS += $(addprefix $(PREFIX_O)hal/$(TARGET_SUFF)/stm32/l4/, _init.o stm32l4.o timer.o console.o)

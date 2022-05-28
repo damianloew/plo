@@ -78,8 +78,8 @@ static uart_t *uart_getInstance(unsigned int minor)
 static int uart_handleIntr(unsigned int irq, void *buff)
 {
 	char c;
-	char *ram1 = (char *)0x20008000;
-	char *ram0 = (char *)0x20000000;
+	char *ram1 = (char *)UART0_RX_DMA;
+	char *ram0 = (char *)UART0_TX_DMA;
 	u32 flags;
 	uart_t *uart = (uart_t *)buff;
 	u32 rxcount = 0;
@@ -246,7 +246,7 @@ static ssize_t uart_write(unsigned int minor, const void *buff, size_t len)
 	/* sth wrong here */
 	uart_t *uart;
 	size_t cnt;
-	char *ram0 = (char *)0x20000000;
+	char *ram0 = (char *)UART0_TX_DMA;
 	char *chbuff = (char *)buff;
 
 	if ((uart = uart_getInstance(minor)) == NULL)
@@ -367,8 +367,8 @@ static int uart_init(unsigned int minor)
 	*(uart->base + uarte_rxd_maxcnt) = 32;
 
 	/* Set default uart sources: ram0 and ram1 start addresses */
-	*(uart->base + uarte_txd_ptr) = 0x20000000;
-	*(uart->base + uarte_rxd_ptr) = 0x20008000;
+	*(uart->base + uarte_txd_ptr) = UART0_TX_DMA;
+	*(uart->base + uarte_rxd_ptr) = UART0_RX_DMA;
 
 	/* disable all uart interrupts TODO: enable rx interrupts ? */
 	*(uart->base + uarte_intenclr) = 0xFFFFFFFF;

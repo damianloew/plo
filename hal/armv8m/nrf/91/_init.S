@@ -17,13 +17,10 @@
 
 #include "config.h"
 
-// set unified instruction set syntax - unified for arm and thumb
 .syntax unified
 
-//assemble the following code into a init section (x - an executable section)
 .section .init, "x"
 
-//make the symbol _init_vectors visible for ld
 .globl _init_vectors
 .type _init_vectors, %object
 _init_vectors:
@@ -60,9 +57,9 @@ _start:
 	cpsid if
 
 	/* Init vector table and stack pointer */
-	ldr r0, =0xe000ed08 //loads r0 with the following constant - vector table offset register address, verified in armv8m doc
-	ldr r1, =_init_vectors //loads the init vector pointer
-	str r1, [r0] //store r1 in r0 address ? so r1 content is placed on stack (?) our _init_vectors is placed in vector table
+	ldr r0, =0xe000ed08
+	ldr r1, =_init_vectors
+	str r1, [r0]
 	isb
 	dmb
 
