@@ -5,13 +5,15 @@
  *
  * NRF9160 Flash driver
  *
- * Copyright 2020 Phoenix Systems
- * Author: Aleksander Kaminski
+ * Copyright 2020, 2022 Phoenix Systems
+ * Author: Aleksander Kaminski, Damian Loewnau
  *
  * This file is part of Phoenix-RTOS.
  *
  * %LICENSE%
  */
+
+/* TODO: verify that the copy from flash-stm32 code is 100% correct */
 
 #include <hal/hal.h>
 #include <lib/errno.h>
