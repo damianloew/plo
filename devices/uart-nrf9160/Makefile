@@ -1,7 +1,7 @@
 #
-# Makefile for uart-stm32l4x6
+# Makefile for uart-nrf9160
 #
-# Copyright 2021 Phoenix Systems
+# Copyright 2022 Phoenix Systems
 #
 # %LICENSE%
 #

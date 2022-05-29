@@ -22,7 +22,7 @@ static struct {
 } halconsole_common;
 
 
-/* Maximum number of characters that will be sent is specifed by UART0_TX_DMA_SIZE */
+/* Maximum number of characters that will be sent is specifed by UART_TX_DMA_SIZE */
 void hal_consolePrint(const char *s)
 {
 	volatile char *tx_dma_buff = (volatile char *)UART0_TX_DMA;
@@ -33,8 +33,8 @@ void hal_consolePrint(const char *s)
 		cnt++;
 	} while (s[cnt-1] != '\0');
 
-	if (cnt > UART0_TX_DMA_SIZE) {
-		cnt = UART0_TX_DMA_SIZE;
+	if (cnt > UART_TX_DMA_SIZE) {
+		cnt = UART_TX_DMA_SIZE;
 	}
 
 	*(halconsole_common.base + uarte_txd_ptr) = UART0_TX_DMA;
@@ -93,8 +93,8 @@ void console_init(void)
 	*(halconsole_common.base + uarte_config) = 0u;
 
 	/* Set default max number of bytes in specific buffers */
-	*(halconsole_common.base + uarte_txd_maxcnt) = UART0_TX_DMA_SIZE;
-	*(halconsole_common.base + uarte_rxd_maxcnt) = UART0_RX_DMA_SIZE;
+	*(halconsole_common.base + uarte_txd_maxcnt) = UART_TX_DMA_SIZE;
+	*(halconsole_common.base + uarte_rxd_maxcnt) = UART_RX_DMA_SIZE;
 
 	/* Set default memory regions for uart dma */
 	*(halconsole_common.base + uarte_txd_ptr) = UART0_TX_DMA;
