@@ -31,7 +31,7 @@
 #endif
 
 #ifndef UART1
-#define UART1 0
+#define UART1 1
 #endif
 
 #ifndef UART2

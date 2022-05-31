@@ -67,7 +67,7 @@ static void console_configPins(void)
 void console_init(void)
 {
 	halconsole_common.base = UART0_BASE;
-
+	// halconsole_common.base = UART1_BASE;
 	console_configPins();
 
 	/* disable uarte instance */
@@ -79,6 +79,11 @@ void console_init(void)
 	*(halconsole_common.base + uarte_psel_rxd) = UART0_RX;
 	*(halconsole_common.base + uarte_psel_rts) = UART0_RTS;
 	*(halconsole_common.base + uarte_psel_cts) = UART0_CTS;
+	// /* Select pins */
+	// *(halconsole_common.base + uarte_psel_txd) = UART1_TX;
+	// *(halconsole_common.base + uarte_psel_rxd) = UART1_RX;
+	// *(halconsole_common.base + uarte_psel_rts) = UART1_RTS;
+	// *(halconsole_common.base + uarte_psel_cts) = UART1_CTS;
 
 	switch (UART_BAUDRATE) {
 		case 9600:
@@ -99,6 +104,8 @@ void console_init(void)
 	/* Set default memory regions for uart dma */
 	*(halconsole_common.base + uarte_txd_ptr) = UART0_TX_DMA;
 	*(halconsole_common.base + uarte_rxd_ptr) = UART0_RX_DMA;
+	// *(halconsole_common.base + uarte_txd_ptr) = UART1_TX_DMA;
+	// *(halconsole_common.base + uarte_rxd_ptr) = UART1_RX_DMA;
 
 	/* disable all uart interrupts */
 	*(halconsole_common.base + uarte_intenclr) = 0xFFFFFFFF;

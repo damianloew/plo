@@ -14,6 +14,7 @@
 #include <hal/hal.h>
 
 extern char __bss_start[], __bss_end[];
+extern char __stack_top[];
 extern char __data_load[], __data_start[], __data_end[];
 extern char __ramtext_load[], __ramtext_start[], __ramtext_end[];
 

@@ -25,6 +25,9 @@ typedef struct {
 	unsigned int cnt;
 	unsigned int irq;
 
+	volatile char *tx_dma;
+	volatile char *rx_dma;
+
 	u8 dataRx[BUFFER_SIZE];
 	cbuffer_t cbuffRx;
 
@@ -47,7 +50,7 @@ static int uartLut[] = { UART0, UART1, UART2, UART3 };
 static const struct {
 	void *base;
 	unsigned int irq;
-	unsigned char baudrate;
+	unsigned int baudrate;
 	volatile char *tx_dma;
 	volatile char *rx_dma;
 	unsigned char txpin;
@@ -56,10 +59,10 @@ static const struct {
 	unsigned char ctspin;
 /* there can be used other pins as well */
 } uartInfo[] = {
-	{ (void *)UART0_BASE, UART0_IRQ, UART_BAUDRATE, UART0_TX_DMA, UART0_RX_DMA, UART0_TX, UART0_RX, UART0_RTS, UART0_CTS },
-	{ (void *)UART1_BASE, UART1_IRQ, UART_BAUDRATE, UART1_TX_DMA, UART1_RX_DMA, UART1_TX, UART1_RX, UART1_RTS, UART1_CTS },
-	{ (void *)UART2_BASE, UART2_IRQ, UART_BAUDRATE, UART2_TX_DMA, UART2_RX_DMA, UART2_TX, UART2_RX, UART2_RTS, UART2_CTS },
-	{ (void *)UART3_BASE, UART3_IRQ, UART_BAUDRATE, UART3_TX_DMA, UART3_RX_DMA, UART3_TX, UART3_RX, UART3_RTS, UART3_CTS }
+	{ (void *)UART0_BASE, UART0_IRQ, UART_BAUDRATE, (volatile char *)UART0_TX_DMA, (volatile char *)UART0_RX_DMA, UART0_TX, UART0_RX, UART0_RTS, UART0_CTS },
+	{ (void *)UART1_BASE, UART1_IRQ, UART_BAUDRATE, (volatile char *)UART1_TX_DMA, (volatile char *)UART1_RX_DMA, UART1_TX, UART1_RX, UART1_RTS, UART1_CTS },
+	{ (void *)UART2_BASE, UART2_IRQ, UART_BAUDRATE, (volatile char *)UART2_TX_DMA, (volatile char *)UART2_RX_DMA, UART2_TX, UART2_RX, UART2_RTS, UART2_CTS },
+	{ (void *)UART3_BASE, UART3_IRQ, UART_BAUDRATE, (volatile char *)UART3_TX_DMA, (volatile char *)UART3_RX_DMA, UART3_TX, UART3_RX, UART3_RTS, UART3_CTS }
 };
 
 
@@ -77,9 +80,9 @@ static uart_t *uart_getInstance(unsigned int minor)
 
 static int uart_handleIntr(unsigned int irq, void *buff)
 {
-	volatile char *rx_dma_buff = (char *)UART0_RX_DMA;
-	volatile char *tx_dma_buff = (char *)UART0_TX_DMA;
 	uart_t *uart = (uart_t *)buff;
+	// volatile char *rx_dma_buff = uart->tx_dma /* TODO: change to dynamic setting */
+	// volatile char *tx_dma_buff = (char *)UART1_TX_DMA;
 
 	if (uart == NULL)
 		return -EINVAL;
@@ -87,7 +90,7 @@ static int uart_handleIntr(unsigned int irq, void *buff)
 	if (uart->base + uarte_events_rxdrdy) {
 		/* clear rxdrdy event flag */
 		*(uart->base + uarte_events_rxdrdy) = 0u;
-		lib_cbufWrite(&uart->cbuffRx, &rx_dma_buff[uart->cnt], 1);
+		lib_cbufWrite(&uart->cbuffRx, &(uart->rx_dma)[uart->cnt], 1);
 		uart->cnt++;
 	}
 	if (uart->base + uarte_events_endrx) {
@@ -126,7 +129,7 @@ static ssize_t uart_read(unsigned int minor, addr_t offs, void *buff, size_t len
 }
 
 
-static int uart_send(uart_t *uart, size_t len)
+static int uart_send(uart_t *uart, size_t len) /* TODO: add returning nr of bytes transferred from register */
 {
 	*(uart->base + uarte_txd_maxcnt) = len;
 	*(uart->base + uarte_starttx) = 1u;
@@ -150,7 +153,7 @@ static ssize_t uart_write(unsigned int minor, const void *buff, size_t len)
 	if ((uart = uart_getInstance(minor)) == NULL)
 		return -EINVAL;
 
-	hal_memcpy((void *)UART0_TX_DMA, buff, len);
+	hal_memcpy((void *)uart->tx_dma, buff, len); /*TODO: dynamic!! */
 
 	uart_send(uart, len);
 
@@ -241,7 +244,9 @@ static int uart_init(unsigned int minor)
 		return -EINVAL;
 
 	uart->base = uartInfo[minor].base;
-	
+	uart->tx_dma = uartInfo[minor].tx_dma;
+	uart->rx_dma = uartInfo[minor].rx_dma;
+
 	if (!(*(uart->base + uarte_enable) & 0x08)) {
 		uart_configPins(minor);
 		/* Select pins */
@@ -272,8 +277,8 @@ static int uart_init(unsigned int minor)
 	*(uart->base + uarte_rxd_maxcnt) = UART_RX_DMA_SIZE;
 
 	/* Set default memory regions for uart dma */
-	*(uart->base + uarte_txd_ptr) = uartInfo[minor].tx_dma;
-	*(uart->base + uarte_rxd_ptr) = uartInfo[minor].rx_dma;
+	*(uart->base + uarte_txd_ptr) = (u32)uartInfo[minor].tx_dma;
+	*(uart->base + uarte_rxd_ptr) = (u32)uartInfo[minor].rx_dma;
 
 	/* Disable all uart interrupts */
 	*(uart->base + uarte_intenclr) = 0xFFFFFFFF;

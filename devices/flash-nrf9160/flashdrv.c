@@ -52,7 +52,6 @@ static int flashdrv_isValidMinor(unsigned int minor)
 static ssize_t flashdrv_read(unsigned int minor, addr_t offs, void *buff, size_t len, time_t timeout)
 {
 	char *memptr;
-	char *buffchar =  (char *)buff;
 	ssize_t ret = -EINVAL;
 
 	(void)timeout;

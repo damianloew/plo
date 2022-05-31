@@ -32,7 +32,7 @@ _init_vectors:
 .word _exceptions_dispatch  /* MemMgtFault */
 .word _exceptions_dispatch  /* BusFault */
 .word _exceptions_dispatch  /* UsageFault */
-.word _exceptions_dispatch  /* Secure Fault */
+.word _exceptions_dispatch  /* SecureFault */
 .word 0
 .word 0
 .word 0

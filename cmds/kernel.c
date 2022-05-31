@@ -93,7 +93,8 @@ static int cmd_kernel(int argc, char *argv[])
 					log_error("\nCan't read %s, on %s", kname, argv[1]);
 					return res;
 				}
-
+				/* here it gets stuck */
+				// lib_printf("entry->start(dest) + segOffs = %x, buff(src) = %x, size = %d\n", (entry->start + segOffs), buff, res);
 				hal_memcpy((void *)(entry->start + segOffs), buff, res);
 			}
 		}
