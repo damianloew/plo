@@ -129,7 +129,7 @@ static ssize_t uart_read(unsigned int minor, addr_t offs, void *buff, size_t len
 }
 
 
-static int uart_send(uart_t *uart, size_t len) /* TODO: add returning nr of bytes transferred from register */
+static size_t uart_send(uart_t *uart, size_t len)
 {
 	*(uart->base + uarte_txd_maxcnt) = len;
 	*(uart->base + uarte_starttx) = 1u;
@@ -141,7 +141,7 @@ static int uart_send(uart_t *uart, size_t len) /* TODO: add returning nr of byte
 		;
 	*(uart->base + uarte_events_endtx) = 0u;
 
-	return EOK;
+	return (size_t)*(uart->base + uarte_txd_amount);
 }
 
 
@@ -155,7 +155,7 @@ static ssize_t uart_write(unsigned int minor, const void *buff, size_t len)
 
 	hal_memcpy((void *)uart->tx_dma, buff, len); /*TODO: dynamic!! */
 
-	uart_send(uart, len);
+	cnt = uart_send(uart, len);
 
 	return (ssize_t)cnt;
 }
