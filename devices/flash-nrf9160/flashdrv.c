@@ -23,6 +23,7 @@
 #define FLASH_NO 1
 
 
+enum {nvmc_ready = 256, nvmc_config = 321, nvmc_eraseall = 323, nvmc_configns = 353};
 static const struct {
 	u32 start;
 	u32 end;
@@ -69,8 +70,30 @@ static ssize_t flashdrv_read(unsigned int minor, addr_t offs, void *buff, size_t
 
 static ssize_t flashdrv_write(unsigned int minor, addr_t offs, const void *buff, size_t len)
 {
+	char *memptr;
+	ssize_t ret = -EINVAL;
+
+	volatile u32 *nvmc_base = 0x50039000;
+	/* Enable writing */
+	*(nvmc_base + nvmc_config) = 0x1;
+	/* not sure if needed */
+	*(nvmc_base + nvmc_configns) = 0x1;
+
+	*(nvmc_base + nvmc_eraseall) = 0x1;
+
+	/* wait for erasing completion */
+	while ( *(nvmc_base + nvmc_ready) != 1u )
+		{;}
+
+	if (flashdrv_isValidMinor(minor) != 0 && flashdrv_isValidAddress(minor, offs, len) != 0) {
+		memptr = (void *)flashParams[minor].start;
+
+		hal_memcpy(memptr + offs, buff, len);
+		ret = (ssize_t)len;
+	}
+
 	/* Not supported. TODO? */
-	return -ENOSYS;
+	return ret;
 }
 
 

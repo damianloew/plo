@@ -38,7 +38,7 @@ MEMORY
 
 /* FLASH image */
 REGION_ALIAS("PLO_IMAGE", m_flash);
-REGION_ALIAS("TCM_TEXT", m_flash);
+REGION_ALIAS("TCM_TEXT", m_flash); //prepare to copying to flash
 REGION_ALIAS("DATA", m_sram);
 REGION_ALIAS("BSS", m_sram);
 REGION_ALIAS("HEAP", m_sram);
