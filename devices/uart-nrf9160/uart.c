@@ -282,7 +282,7 @@ static int uart_init(unsigned int minor)
 
 	/* Disable all uart interrupts */
 	*(uart->base + uarte_intenclr) = 0xFFFFFFFF;
-	/* Enable rx timeout interruts */
+	/* Enable rxdrdy and endrx interruts - to change*/
 	*(uart->base + uarte_intenset) = 0x14;
 	hal_cpuDataMemoryBarrier();
 

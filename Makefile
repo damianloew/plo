@@ -19,7 +19,7 @@ LDGEN ?= $(CC)
 
 CFLAGS += $(BOARD_CONFIG) -DVERSION=\"$(VERSION)\"
 CFLAGS += -I../plo
-CFLAGS += -O0 -g3 -ggdb #DEBUG CFLAGS
+CFLAGS += -O0 -ggdb3 #DEBUG CFLAGS
 
 include hal/$(TARGET_SUFF)/Makefile
 include lib/Makefile

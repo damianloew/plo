@@ -31,7 +31,7 @@ int main(void)
 	lib_printf(CONSOLE_CURSOR_HIDE CONSOLE_MAGENTA "\nhal: %s", hal_cpuInfo());
 	_nrf91_gpioConfig(2, output, nopull);
 	devs_init();
-	// lib_printf("__bss_end[] = %x\n", __bss_end);
+
 	cmd_run();
 
 	lib_printf(CONSOLE_CURSOR_SHOW CONSOLE_NORMAL);

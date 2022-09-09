@@ -42,10 +42,6 @@
 #define UART3 0
 #endif
 
-#ifndef UART_CONSOLE
-#define UART_CONSOLE 2
-#endif
-
 /* currently supported baud rates: 9600, 115200 */
 #define UART_BAUDRATE 115200
 
